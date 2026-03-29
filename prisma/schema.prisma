@@ -1,0 +1,166 @@
+// MoneyLoop — Digital Susu Management System
+// Prisma schema for PostgreSQL (Neon)
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum GroupStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+}
+
+enum CycleStatus {
+  PENDING // Contributions being collected
+  READY // All contributions in, awaiting payout
+  PAID // Payout sent successfully
+  FAILED // Payout attempt failed
+}
+
+enum ContributionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PayoutStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ─────────────────────────────────────────
+// Models
+// ─────────────────────────────────────────
+
+model User {
+  id          String   @id @default(uuid())
+  name        String
+  email       String   @unique
+  phone       String
+  momoNumber  String // MoMo number for receiving payouts
+  momoNetwork String   @default("MTN") // MTN | Vodafone | AirtelTigo
+  role        Role     @default(MEMBER)
+  password    String // hashed with bcrypt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  groupMemberships GroupMember[]
+  contributions    Contribution[]
+  payoutsReceived  Payout[]
+
+  @@map("users")
+}
+
+model SusuGroup {
+  id                 String      @id @default(uuid())
+  name               String
+  contributionAmount Decimal     @db.Decimal(10, 2)
+  frequency          Frequency
+  currentCycle       Int         @default(1)
+  status             GroupStatus @default(ACTIVE)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  // Relations
+  members GroupMember[]
+  cycles  Cycle[]
+
+  @@map("susu_groups")
+}
+
+model GroupMember {
+  id             String   @id @default(uuid())
+  userId         String
+  groupId        String
+  payoutPosition Int // 1-based position in rotation
+  joinedAt       DateTime @default(now())
+
+  // Relations
+  user  User      @relation(fields: [userId], references: [id])
+  group SusuGroup @relation(fields: [groupId], references: [id])
+
+  @@unique([groupId, payoutPosition]) // no two members at same position
+  @@unique([groupId, userId]) // one membership per group
+  @@map("group_members")
+}
+
+model Cycle {
+  id             String      @id @default(uuid())
+  groupId        String
+  cycleNumber    Int // Which round this is (1, 2, 3...)
+  recipientId    String // The member who receives the payout this cycle
+  payoutDate     DateTime    @db.Date
+  status         CycleStatus @default(PENDING)
+  totalCollected Decimal     @default(0) @db.Decimal(10, 2)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  // Relations
+  group         SusuGroup      @relation(fields: [groupId], references: [id])
+  contributions Contribution[]
+  payout        Payout?
+
+  @@unique([groupId, cycleNumber])
+  @@map("cycles")
+}
+
+model Contribution {
+  id          String             @id @default(uuid())
+  userId      String
+  cycleId     String
+  amount      Decimal            @db.Decimal(10, 2)
+  paystackRef String?            @unique // Paystack payment reference
+  status      ContributionStatus @default(PENDING)
+  paidAt      DateTime?
+  createdAt   DateTime           @default(now())
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id])
+  cycle Cycle @relation(fields: [cycleId], references: [id])
+
+  @@unique([userId, cycleId]) // one contribution per member per cycle
+  @@map("contributions")
+}
+
+model Payout {
+  id                  String       @id @default(uuid())
+  cycleId             String       @unique
+  recipientId         String
+  amount              Decimal      @db.Decimal(10, 2)
+  paystackTransferId  String? // Paystack transfer ID
+  paystackRecipientId String? // Paystack transfer recipient code
+  status              PayoutStatus @default(PENDING)
+  failureReason       String?
+  sentAt              DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  // Relations
+  cycle     Cycle @relation(fields: [cycleId], references: [id])
+  recipient User  @relation(fields: [recipientId], references: [id])
+
+  @@map("payouts")
+}

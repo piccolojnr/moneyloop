@@ -94,11 +94,11 @@ export default function RegisterPage() {
 
     if (result?.error) {
       setServerError("Account created but sign-in failed. Please log in.");
-      // router.push("/login");
+      router.push("/login");
       return;
     }
 
-    // router.push("/dashboard");
+    router.push("/dashboard");
   }
 
   return (

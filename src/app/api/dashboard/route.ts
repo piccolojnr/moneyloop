@@ -24,9 +24,22 @@ function addIntervals(baseDate: Date, count: number, frequency: string) {
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const userId = (session?.user as { id?: string } | undefined)?.id;
+  const user = session?.user as { id?: string } | undefined;
+  const userId = user?.id;
 
   if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const currentUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  if (!currentUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -90,19 +103,37 @@ export async function GET() {
   });
 
   if (!membership) {
-    return NextResponse.json(
-      { error: "No active group membership found" },
-      { status: 404 }
-    );
+    return NextResponse.json({
+      member: currentUser,
+      group: null,
+      activeCycle: null,
+      myContribution: {
+        status: null,
+      },
+      myPayout: null,
+      totalCyclesRemaining: 0,
+    });
   }
 
   const activeCycle = membership.group.cycles[0];
 
   if (!activeCycle) {
-    return NextResponse.json(
-      { error: "No active cycle found for this group" },
-      { status: 404 }
-    );
+    return NextResponse.json({
+      member: currentUser,
+      group: {
+        groupId: membership.group.id,
+        groupName: membership.group.name,
+        payoutPosition: membership.payoutPosition,
+        memberCount: membership.group.members.length,
+        contributionAmount: Number(membership.group.contributionAmount),
+      },
+      activeCycle: null,
+      myContribution: {
+        status: null,
+      },
+      myPayout: null,
+      totalCyclesRemaining: 0,
+    });
   }
 
   const memberCount = membership.group.members.length;
@@ -133,10 +164,7 @@ export async function GET() {
   );
 
   return NextResponse.json({
-    member: {
-      id: membership.user.id,
-      name: membership.user.name,
-    },
+    member: currentUser,
     group: {
       groupId: membership.group.id,
       groupName: membership.group.name,

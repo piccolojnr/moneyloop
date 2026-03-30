@@ -25,7 +25,7 @@ type DashboardResponse = {
     payoutPosition: number;
     memberCount: number;
     contributionAmount: number;
-  };
+  } | null;
   activeCycle: {
     cycleId: string;
     cycleNumber: number;
@@ -34,7 +34,7 @@ type DashboardResponse = {
     totalCollected: number;
     recipientName: string;
     paidCount: number;
-  };
+  } | null;
   myContribution: {
     status: "PENDING" | "SUCCESS" | null;
   };
@@ -42,7 +42,7 @@ type DashboardResponse = {
     daysUntilTurn: number;
     cyclesUntilTurn: number;
     expectedPayoutDate: string;
-  };
+  } | null;
   totalCyclesRemaining: number;
 };
 
@@ -52,9 +52,9 @@ async function fetchDashboard() {
   });
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as
-      | { error?: string }
-      | null;
+    const body = (await response.json().catch(() => null)) as {
+      error?: string;
+    } | null;
     throw new Error(body?.error ?? "Failed to load dashboard");
   }
 
@@ -123,9 +123,32 @@ export function DashboardPageClient() {
     );
   }
 
+  if (!data.group || !data.activeCycle || !data.myPayout) {
+    return (
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardDescription>Account ready</CardDescription>
+          <CardTitle>No active susu cycle yet</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground">
+            Your account exists, but you are not yet attached to an active group
+            and payout cycle. Once that assignment is in place, your dashboard
+            summary will appear here.
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Signed in as{" "}
+            <span className="font-medium text-foreground">{data.member.name}</span>.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const contributionPaid = data.myContribution.status === "SUCCESS";
   const contributionPending =
-    data.myContribution.status === "PENDING" || data.myContribution.status === null;
+    data.myContribution.status === "PENDING" ||
+    data.myContribution.status === null;
   const paidPercent =
     data.group.memberCount === 0
       ? 0
@@ -149,7 +172,9 @@ export function DashboardPageClient() {
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Recipient</p>
-            <p className="text-lg font-medium">{data.activeCycle.recipientName}</p>
+            <p className="text-lg font-medium">
+              {data.activeCycle.recipientName}
+            </p>
           </div>
         </CardContent>
       </Card>
@@ -197,11 +222,17 @@ export function DashboardPageClient() {
             <p className="text-lg font-medium">#{data.group.payoutPosition}</p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Cycles until your turn</p>
-            <p className="text-lg font-medium">{data.myPayout.cyclesUntilTurn}</p>
+            <p className="text-sm text-muted-foreground">
+              Cycles until your turn
+            </p>
+            <p className="text-lg font-medium">
+              {data.myPayout.cyclesUntilTurn}
+            </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-muted-foreground">Expected payout date</p>
+            <p className="text-sm text-muted-foreground">
+              Expected payout date
+            </p>
             <p className="text-lg font-medium">
               {formatDate(data.myPayout.expectedPayoutDate)}
             </p>

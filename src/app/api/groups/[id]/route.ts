@@ -51,6 +51,15 @@ export async function GET(
             recipientId: true,
             createdAt: true,
             updatedAt: true,
+            contributions: {
+              select: {
+                id: true,
+                userId: true,
+                amount: true,
+                status: true,
+                paidAt: true,
+              },
+            },
           },
         },
       },
@@ -88,6 +97,13 @@ export async function GET(
         recipientId: cycle.recipientId,
         createdAt: cycle.createdAt.toISOString(),
         updatedAt: cycle.updatedAt.toISOString(),
+        contributions: cycle.contributions.map((contribution) => ({
+          id: contribution.id,
+          userId: contribution.userId,
+          amount: Number(contribution.amount),
+          status: contribution.status,
+          paidAt: contribution.paidAt?.toISOString() ?? null,
+        })),
       })),
     });
   } catch (error) {

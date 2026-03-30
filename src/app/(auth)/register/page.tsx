@@ -94,11 +94,11 @@ export default function RegisterPage() {
 
     if (result?.error) {
       setServerError("Account created but sign-in failed. Please log in.");
-      router.push("/login");
+      // router.push("/login");
       return;
     }
 
-    router.push("/dashboard");
+    // router.push("/dashboard");
   }
 
   return (
@@ -119,7 +119,11 @@ export default function RegisterPage() {
               <FormItem>
                 <FormLabel>Full name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Kwame Mensah" autoComplete="name" {...field} />
+                  <Input
+                    placeholder="Kwame Mensah"
+                    autoComplete="name"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -185,7 +189,10 @@ export default function RegisterPage() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Network</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select" />
@@ -242,7 +249,9 @@ export default function RegisterPage() {
           />
 
           {serverError && (
-            <p className="text-sm font-medium text-destructive">{serverError}</p>
+            <p className="text-sm font-medium text-destructive">
+              {serverError}
+            </p>
           )}
 
           <Button
@@ -250,7 +259,9 @@ export default function RegisterPage() {
             className="w-full"
             disabled={form.formState.isSubmitting}
           >
-            {form.formState.isSubmitting ? "Creating account…" : "Create account"}
+            {form.formState.isSubmitting
+              ? "Creating account…"
+              : "Create account"}
           </Button>
         </form>
       </Form>

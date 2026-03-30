@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { initiateTransfer, createTransferRecipient } from "@/lib/paystack";
 import { advanceToNextCycle } from "@/lib/susu";
+import { sendContributionReminder } from "@/lib/email";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,6 +23,67 @@ export async function GET(req: NextRequest) {
 
   const tomorrow = new Date(today);
   tomorrow.setDate(tomorrow.getDate() + 1);
+
+  const pendingCycles = await prisma.cycle.findMany({
+    where: {
+      status: "PENDING",
+    },
+    include: {
+      group: {
+        include: {
+          members: {
+            include: {
+              user: {
+                select: {
+                  email: true,
+                  name: true,
+                  id: true,
+                },
+              },
+            },
+            orderBy: { payoutPosition: "asc" },
+          },
+        },
+      },
+      contributions: {
+        select: {
+          userId: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  for (const cycle of pendingCycles) {
+    const paidUserIds = new Set(
+      cycle.contributions
+        .filter((contribution) => contribution.status === "SUCCESS")
+        .map((contribution) => contribution.userId)
+    );
+
+    for (const member of cycle.group.members) {
+      if (paidUserIds.has(member.userId)) {
+        continue;
+      }
+
+      try {
+        await sendContributionReminder({
+          to: member.user.email,
+          name: member.user.name,
+          groupName: cycle.group.name,
+          amount: Number(cycle.group.contributionAmount),
+          cycleNumber: cycle.cycleNumber,
+          payoutDate: cycle.payoutDate.toISOString().slice(0, 10),
+          payNowUrl: `${process.env.NEXT_PUBLIC_APP_URL}/pay`,
+        });
+      } catch (emailError) {
+        console.error(
+          `Failed to send contribution reminder for cycle ${cycle.id} to ${member.user.email}:`,
+          emailError
+        );
+      }
+    }
+  }
 
   // Find all cycles that are READY and due today
   const cyclesDue = await prisma.cycle.findMany({

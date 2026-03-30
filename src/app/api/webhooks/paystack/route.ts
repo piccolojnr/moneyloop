@@ -6,7 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/paystack";
 import { checkAndMarkCycleReady } from "@/lib/susu";
-import { ContributionStatus, PayoutStatus } from "@prisma/client";
+import { sendPayoutNotification } from "@/lib/email";
+import { ContributionStatus, PayoutStatus } from "@/generated/prisma/client/enums";
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
@@ -54,10 +55,28 @@ export async function POST(req: NextRequest) {
 
       // ── Payout transfer succeeded ────────────────────────────────────────
       case "transfer.success": {
-        const { reference, transfer_code } = event.data;
+        const { transfer_code } = event.data;
 
         const payout = await prisma.payout.findFirst({
           where: { paystackTransferId: transfer_code },
+          include: {
+            recipient: {
+              select: {
+                email: true,
+                name: true,
+              },
+            },
+            cycle: {
+              select: {
+                cycleNumber: true,
+                group: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+          },
         });
         if (!payout) break;
 
@@ -71,6 +90,19 @@ export async function POST(req: NextRequest) {
             data: { status: "PAID" },
           }),
         ]);
+
+        try {
+          await sendPayoutNotification({
+            to: payout.recipient.email,
+            name: payout.recipient.name,
+            groupName: payout.cycle.group.name,
+            amount: Number(payout.amount),
+            cycleNumber: payout.cycle.cycleNumber,
+          });
+        } catch (emailError) {
+          console.error("Failed to send payout email:", emailError);
+        }
+
         break;
       }
 

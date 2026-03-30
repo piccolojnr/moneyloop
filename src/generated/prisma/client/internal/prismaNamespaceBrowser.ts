@@ -56,7 +56,8 @@ export const ModelName = {
   GroupMember: 'GroupMember',
   Cycle: 'Cycle',
   Contribution: 'Contribution',
-  Payout: 'Payout'
+  Payout: 'Payout',
+  Invitation: 'Invitation'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -96,6 +97,7 @@ export const SusuGroupScalarFieldEnum = {
   name: 'name',
   contributionAmount: 'contributionAmount',
   frequency: 'frequency',
+  treasurerId: 'treasurerId',
   currentCycle: 'currentCycle',
   status: 'status',
   createdAt: 'createdAt',
@@ -110,6 +112,7 @@ export const GroupMemberScalarFieldEnum = {
   userId: 'userId',
   groupId: 'groupId',
   payoutPosition: 'payoutPosition',
+  memberRole: 'memberRole',
   joinedAt: 'joinedAt'
 } as const
 
@@ -160,6 +163,19 @@ export const PayoutScalarFieldEnum = {
 } as const
 
 export type PayoutScalarFieldEnum = (typeof PayoutScalarFieldEnum)[keyof typeof PayoutScalarFieldEnum]
+
+
+export const InvitationScalarFieldEnum = {
+  id: 'id',
+  groupId: 'groupId',
+  email: 'email',
+  token: 'token',
+  expiresAt: 'expiresAt',
+  usedAt: 'usedAt',
+  createdAt: 'createdAt'
+} as const
+
+export type InvitationScalarFieldEnum = (typeof InvitationScalarFieldEnum)[keyof typeof InvitationScalarFieldEnum]
 
 
 export const SortOrder = {

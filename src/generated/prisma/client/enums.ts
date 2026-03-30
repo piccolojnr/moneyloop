@@ -35,6 +35,14 @@ export const GroupStatus = {
 export type GroupStatus = (typeof GroupStatus)[keyof typeof GroupStatus]
 
 
+export const GroupMemberRole = {
+  TREASURER: 'TREASURER',
+  MEMBER: 'MEMBER'
+} as const
+
+export type GroupMemberRole = (typeof GroupMemberRole)[keyof typeof GroupMemberRole]
+
+
 export const CycleStatus = {
   PENDING: 'PENDING',
   READY: 'READY',

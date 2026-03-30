@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/session";
+import { getRequiredSession } from "@/lib/session";
 
 function handleRouteError(error: unknown) {
   if (error instanceof Response) {
@@ -12,22 +12,47 @@ function handleRouteError(error: unknown) {
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 }
 
+async function getSessionUserId() {
+  const session = await getRequiredSession();
+  const userId = (session.user as { id?: string }).id;
+
+  if (!userId) {
+    throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return userId;
+}
+
 export async function GET(
   _req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin();
-
+    const userId = await getSessionUserId();
     const { id } = await context.params;
-    const group = await prisma.susuGroup.findUnique({
-      where: { id },
+
+    const group = await prisma.susuGroup.findFirst({
+      where: {
+        id,
+        OR: [
+          { treasurerId: userId },
+          { members: { some: { userId } } },
+        ],
+      },
       include: {
+        treasurer: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         members: {
-          orderBy: { payoutPosition: "asc" },
+          orderBy: [{ payoutPosition: "asc" }, { joinedAt: "asc" }],
           select: {
             id: true,
             payoutPosition: true,
+            memberRole: true,
             joinedAt: true,
             user: {
               select: {
@@ -78,6 +103,11 @@ export async function GET(
       status: group.status,
       createdAt: group.createdAt.toISOString(),
       updatedAt: group.updatedAt.toISOString(),
+      treasurer: {
+        id: group.treasurer.id,
+        name: group.treasurer.name,
+        email: group.treasurer.email,
+      },
       members: group.members.map((member) => ({
         id: member.id,
         userId: member.user.id,
@@ -86,6 +116,7 @@ export async function GET(
         phone: member.user.phone,
         momoNumber: member.user.momoNumber,
         payoutPosition: member.payoutPosition,
+        memberRole: member.memberRole,
         joinedAt: member.joinedAt.toISOString(),
       })),
       cycles: group.cycles.map((cycle) => ({

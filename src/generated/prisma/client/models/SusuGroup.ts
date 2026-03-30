@@ -41,6 +41,7 @@ export type SusuGroupMinAggregateOutputType = {
   name: string | null
   contributionAmount: runtime.Decimal | null
   frequency: $Enums.Frequency | null
+  treasurerId: string | null
   currentCycle: number | null
   status: $Enums.GroupStatus | null
   createdAt: Date | null
@@ -52,6 +53,7 @@ export type SusuGroupMaxAggregateOutputType = {
   name: string | null
   contributionAmount: runtime.Decimal | null
   frequency: $Enums.Frequency | null
+  treasurerId: string | null
   currentCycle: number | null
   status: $Enums.GroupStatus | null
   createdAt: Date | null
@@ -63,6 +65,7 @@ export type SusuGroupCountAggregateOutputType = {
   name: number
   contributionAmount: number
   frequency: number
+  treasurerId: number
   currentCycle: number
   status: number
   createdAt: number
@@ -86,6 +89,7 @@ export type SusuGroupMinAggregateInputType = {
   name?: true
   contributionAmount?: true
   frequency?: true
+  treasurerId?: true
   currentCycle?: true
   status?: true
   createdAt?: true
@@ -97,6 +101,7 @@ export type SusuGroupMaxAggregateInputType = {
   name?: true
   contributionAmount?: true
   frequency?: true
+  treasurerId?: true
   currentCycle?: true
   status?: true
   createdAt?: true
@@ -108,6 +113,7 @@ export type SusuGroupCountAggregateInputType = {
   name?: true
   contributionAmount?: true
   frequency?: true
+  treasurerId?: true
   currentCycle?: true
   status?: true
   createdAt?: true
@@ -206,6 +212,7 @@ export type SusuGroupGroupByOutputType = {
   name: string
   contributionAmount: runtime.Decimal
   frequency: $Enums.Frequency
+  treasurerId: string
   currentCycle: number
   status: $Enums.GroupStatus
   createdAt: Date
@@ -240,12 +247,15 @@ export type SusuGroupWhereInput = {
   name?: Prisma.StringFilter<"SusuGroup"> | string
   contributionAmount?: Prisma.DecimalFilter<"SusuGroup"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumFrequencyFilter<"SusuGroup"> | $Enums.Frequency
+  treasurerId?: Prisma.StringFilter<"SusuGroup"> | string
   currentCycle?: Prisma.IntFilter<"SusuGroup"> | number
   status?: Prisma.EnumGroupStatusFilter<"SusuGroup"> | $Enums.GroupStatus
   createdAt?: Prisma.DateTimeFilter<"SusuGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SusuGroup"> | Date | string
   members?: Prisma.GroupMemberListRelationFilter
   cycles?: Prisma.CycleListRelationFilter
+  treasurer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  invitations?: Prisma.InvitationListRelationFilter
 }
 
 export type SusuGroupOrderByWithRelationInput = {
@@ -253,12 +263,15 @@ export type SusuGroupOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   contributionAmount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
+  treasurerId?: Prisma.SortOrder
   currentCycle?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   members?: Prisma.GroupMemberOrderByRelationAggregateInput
   cycles?: Prisma.CycleOrderByRelationAggregateInput
+  treasurer?: Prisma.UserOrderByWithRelationInput
+  invitations?: Prisma.InvitationOrderByRelationAggregateInput
 }
 
 export type SusuGroupWhereUniqueInput = Prisma.AtLeast<{
@@ -269,12 +282,15 @@ export type SusuGroupWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"SusuGroup"> | string
   contributionAmount?: Prisma.DecimalFilter<"SusuGroup"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumFrequencyFilter<"SusuGroup"> | $Enums.Frequency
+  treasurerId?: Prisma.StringFilter<"SusuGroup"> | string
   currentCycle?: Prisma.IntFilter<"SusuGroup"> | number
   status?: Prisma.EnumGroupStatusFilter<"SusuGroup"> | $Enums.GroupStatus
   createdAt?: Prisma.DateTimeFilter<"SusuGroup"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SusuGroup"> | Date | string
   members?: Prisma.GroupMemberListRelationFilter
   cycles?: Prisma.CycleListRelationFilter
+  treasurer?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  invitations?: Prisma.InvitationListRelationFilter
 }, "id">
 
 export type SusuGroupOrderByWithAggregationInput = {
@@ -282,6 +298,7 @@ export type SusuGroupOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   contributionAmount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
+  treasurerId?: Prisma.SortOrder
   currentCycle?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -301,6 +318,7 @@ export type SusuGroupScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"SusuGroup"> | string
   contributionAmount?: Prisma.DecimalWithAggregatesFilter<"SusuGroup"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumFrequencyWithAggregatesFilter<"SusuGroup"> | $Enums.Frequency
+  treasurerId?: Prisma.StringWithAggregatesFilter<"SusuGroup"> | string
   currentCycle?: Prisma.IntWithAggregatesFilter<"SusuGroup"> | number
   status?: Prisma.EnumGroupStatusWithAggregatesFilter<"SusuGroup"> | $Enums.GroupStatus
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"SusuGroup"> | Date | string
@@ -318,6 +336,8 @@ export type SusuGroupCreateInput = {
   updatedAt?: Date | string
   members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
   cycles?: Prisma.CycleCreateNestedManyWithoutGroupInput
+  treasurer: Prisma.UserCreateNestedOneWithoutTreasurerOfInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutGroupInput
 }
 
 export type SusuGroupUncheckedCreateInput = {
@@ -325,12 +345,14 @@ export type SusuGroupUncheckedCreateInput = {
   name: string
   contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency: $Enums.Frequency
+  treasurerId: string
   currentCycle?: number
   status?: $Enums.GroupStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
   cycles?: Prisma.CycleUncheckedCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type SusuGroupUpdateInput = {
@@ -344,6 +366,8 @@ export type SusuGroupUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
   cycles?: Prisma.CycleUpdateManyWithoutGroupNestedInput
+  treasurer?: Prisma.UserUpdateOneRequiredWithoutTreasurerOfNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutGroupNestedInput
 }
 
 export type SusuGroupUncheckedUpdateInput = {
@@ -351,12 +375,14 @@ export type SusuGroupUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  treasurerId?: Prisma.StringFieldUpdateOperationsInput | string
   currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
   cycles?: Prisma.CycleUncheckedUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type SusuGroupCreateManyInput = {
@@ -364,6 +390,7 @@ export type SusuGroupCreateManyInput = {
   name: string
   contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency: $Enums.Frequency
+  treasurerId: string
   currentCycle?: number
   status?: $Enums.GroupStatus
   createdAt?: Date | string
@@ -386,10 +413,21 @@ export type SusuGroupUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  treasurerId?: Prisma.StringFieldUpdateOperationsInput | string
   currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
+export type SusuGroupListRelationFilter = {
+  every?: Prisma.SusuGroupWhereInput
+  some?: Prisma.SusuGroupWhereInput
+  none?: Prisma.SusuGroupWhereInput
+}
+
+export type SusuGroupOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
 }
 
 export type SusuGroupCountOrderByAggregateInput = {
@@ -397,6 +435,7 @@ export type SusuGroupCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   contributionAmount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
+  treasurerId?: Prisma.SortOrder
   currentCycle?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -413,6 +452,7 @@ export type SusuGroupMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   contributionAmount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
+  treasurerId?: Prisma.SortOrder
   currentCycle?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -424,6 +464,7 @@ export type SusuGroupMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   contributionAmount?: Prisma.SortOrder
   frequency?: Prisma.SortOrder
+  treasurerId?: Prisma.SortOrder
   currentCycle?: Prisma.SortOrder
   status?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -438,6 +479,48 @@ export type SusuGroupSumOrderByAggregateInput = {
 export type SusuGroupScalarRelationFilter = {
   is?: Prisma.SusuGroupWhereInput
   isNot?: Prisma.SusuGroupWhereInput
+}
+
+export type SusuGroupCreateNestedManyWithoutTreasurerInput = {
+  create?: Prisma.XOR<Prisma.SusuGroupCreateWithoutTreasurerInput, Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput> | Prisma.SusuGroupCreateWithoutTreasurerInput[] | Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput[]
+  connectOrCreate?: Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput | Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput[]
+  createMany?: Prisma.SusuGroupCreateManyTreasurerInputEnvelope
+  connect?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+}
+
+export type SusuGroupUncheckedCreateNestedManyWithoutTreasurerInput = {
+  create?: Prisma.XOR<Prisma.SusuGroupCreateWithoutTreasurerInput, Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput> | Prisma.SusuGroupCreateWithoutTreasurerInput[] | Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput[]
+  connectOrCreate?: Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput | Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput[]
+  createMany?: Prisma.SusuGroupCreateManyTreasurerInputEnvelope
+  connect?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+}
+
+export type SusuGroupUpdateManyWithoutTreasurerNestedInput = {
+  create?: Prisma.XOR<Prisma.SusuGroupCreateWithoutTreasurerInput, Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput> | Prisma.SusuGroupCreateWithoutTreasurerInput[] | Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput[]
+  connectOrCreate?: Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput | Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput[]
+  upsert?: Prisma.SusuGroupUpsertWithWhereUniqueWithoutTreasurerInput | Prisma.SusuGroupUpsertWithWhereUniqueWithoutTreasurerInput[]
+  createMany?: Prisma.SusuGroupCreateManyTreasurerInputEnvelope
+  set?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  disconnect?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  delete?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  connect?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  update?: Prisma.SusuGroupUpdateWithWhereUniqueWithoutTreasurerInput | Prisma.SusuGroupUpdateWithWhereUniqueWithoutTreasurerInput[]
+  updateMany?: Prisma.SusuGroupUpdateManyWithWhereWithoutTreasurerInput | Prisma.SusuGroupUpdateManyWithWhereWithoutTreasurerInput[]
+  deleteMany?: Prisma.SusuGroupScalarWhereInput | Prisma.SusuGroupScalarWhereInput[]
+}
+
+export type SusuGroupUncheckedUpdateManyWithoutTreasurerNestedInput = {
+  create?: Prisma.XOR<Prisma.SusuGroupCreateWithoutTreasurerInput, Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput> | Prisma.SusuGroupCreateWithoutTreasurerInput[] | Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput[]
+  connectOrCreate?: Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput | Prisma.SusuGroupCreateOrConnectWithoutTreasurerInput[]
+  upsert?: Prisma.SusuGroupUpsertWithWhereUniqueWithoutTreasurerInput | Prisma.SusuGroupUpsertWithWhereUniqueWithoutTreasurerInput[]
+  createMany?: Prisma.SusuGroupCreateManyTreasurerInputEnvelope
+  set?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  disconnect?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  delete?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  connect?: Prisma.SusuGroupWhereUniqueInput | Prisma.SusuGroupWhereUniqueInput[]
+  update?: Prisma.SusuGroupUpdateWithWhereUniqueWithoutTreasurerInput | Prisma.SusuGroupUpdateWithWhereUniqueWithoutTreasurerInput[]
+  updateMany?: Prisma.SusuGroupUpdateManyWithWhereWithoutTreasurerInput | Prisma.SusuGroupUpdateManyWithWhereWithoutTreasurerInput[]
+  deleteMany?: Prisma.SusuGroupScalarWhereInput | Prisma.SusuGroupScalarWhereInput[]
 }
 
 export type DecimalFieldUpdateOperationsInput = {
@@ -492,6 +575,89 @@ export type SusuGroupUpdateOneRequiredWithoutCyclesNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SusuGroupUpdateToOneWithWhereWithoutCyclesInput, Prisma.SusuGroupUpdateWithoutCyclesInput>, Prisma.SusuGroupUncheckedUpdateWithoutCyclesInput>
 }
 
+export type SusuGroupCreateNestedOneWithoutInvitationsInput = {
+  create?: Prisma.XOR<Prisma.SusuGroupCreateWithoutInvitationsInput, Prisma.SusuGroupUncheckedCreateWithoutInvitationsInput>
+  connectOrCreate?: Prisma.SusuGroupCreateOrConnectWithoutInvitationsInput
+  connect?: Prisma.SusuGroupWhereUniqueInput
+}
+
+export type SusuGroupUpdateOneRequiredWithoutInvitationsNestedInput = {
+  create?: Prisma.XOR<Prisma.SusuGroupCreateWithoutInvitationsInput, Prisma.SusuGroupUncheckedCreateWithoutInvitationsInput>
+  connectOrCreate?: Prisma.SusuGroupCreateOrConnectWithoutInvitationsInput
+  upsert?: Prisma.SusuGroupUpsertWithoutInvitationsInput
+  connect?: Prisma.SusuGroupWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.SusuGroupUpdateToOneWithWhereWithoutInvitationsInput, Prisma.SusuGroupUpdateWithoutInvitationsInput>, Prisma.SusuGroupUncheckedUpdateWithoutInvitationsInput>
+}
+
+export type SusuGroupCreateWithoutTreasurerInput = {
+  id?: string
+  name: string
+  contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency: $Enums.Frequency
+  currentCycle?: number
+  status?: $Enums.GroupStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
+  cycles?: Prisma.CycleCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutGroupInput
+}
+
+export type SusuGroupUncheckedCreateWithoutTreasurerInput = {
+  id?: string
+  name: string
+  contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency: $Enums.Frequency
+  currentCycle?: number
+  status?: $Enums.GroupStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
+  cycles?: Prisma.CycleUncheckedCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutGroupInput
+}
+
+export type SusuGroupCreateOrConnectWithoutTreasurerInput = {
+  where: Prisma.SusuGroupWhereUniqueInput
+  create: Prisma.XOR<Prisma.SusuGroupCreateWithoutTreasurerInput, Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput>
+}
+
+export type SusuGroupCreateManyTreasurerInputEnvelope = {
+  data: Prisma.SusuGroupCreateManyTreasurerInput | Prisma.SusuGroupCreateManyTreasurerInput[]
+  skipDuplicates?: boolean
+}
+
+export type SusuGroupUpsertWithWhereUniqueWithoutTreasurerInput = {
+  where: Prisma.SusuGroupWhereUniqueInput
+  update: Prisma.XOR<Prisma.SusuGroupUpdateWithoutTreasurerInput, Prisma.SusuGroupUncheckedUpdateWithoutTreasurerInput>
+  create: Prisma.XOR<Prisma.SusuGroupCreateWithoutTreasurerInput, Prisma.SusuGroupUncheckedCreateWithoutTreasurerInput>
+}
+
+export type SusuGroupUpdateWithWhereUniqueWithoutTreasurerInput = {
+  where: Prisma.SusuGroupWhereUniqueInput
+  data: Prisma.XOR<Prisma.SusuGroupUpdateWithoutTreasurerInput, Prisma.SusuGroupUncheckedUpdateWithoutTreasurerInput>
+}
+
+export type SusuGroupUpdateManyWithWhereWithoutTreasurerInput = {
+  where: Prisma.SusuGroupScalarWhereInput
+  data: Prisma.XOR<Prisma.SusuGroupUpdateManyMutationInput, Prisma.SusuGroupUncheckedUpdateManyWithoutTreasurerInput>
+}
+
+export type SusuGroupScalarWhereInput = {
+  AND?: Prisma.SusuGroupScalarWhereInput | Prisma.SusuGroupScalarWhereInput[]
+  OR?: Prisma.SusuGroupScalarWhereInput[]
+  NOT?: Prisma.SusuGroupScalarWhereInput | Prisma.SusuGroupScalarWhereInput[]
+  id?: Prisma.StringFilter<"SusuGroup"> | string
+  name?: Prisma.StringFilter<"SusuGroup"> | string
+  contributionAmount?: Prisma.DecimalFilter<"SusuGroup"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency?: Prisma.EnumFrequencyFilter<"SusuGroup"> | $Enums.Frequency
+  treasurerId?: Prisma.StringFilter<"SusuGroup"> | string
+  currentCycle?: Prisma.IntFilter<"SusuGroup"> | number
+  status?: Prisma.EnumGroupStatusFilter<"SusuGroup"> | $Enums.GroupStatus
+  createdAt?: Prisma.DateTimeFilter<"SusuGroup"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"SusuGroup"> | Date | string
+}
+
 export type SusuGroupCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -502,6 +668,8 @@ export type SusuGroupCreateWithoutMembersInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   cycles?: Prisma.CycleCreateNestedManyWithoutGroupInput
+  treasurer: Prisma.UserCreateNestedOneWithoutTreasurerOfInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutGroupInput
 }
 
 export type SusuGroupUncheckedCreateWithoutMembersInput = {
@@ -509,11 +677,13 @@ export type SusuGroupUncheckedCreateWithoutMembersInput = {
   name: string
   contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency: $Enums.Frequency
+  treasurerId: string
   currentCycle?: number
   status?: $Enums.GroupStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   cycles?: Prisma.CycleUncheckedCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type SusuGroupCreateOrConnectWithoutMembersInput = {
@@ -542,6 +712,8 @@ export type SusuGroupUpdateWithoutMembersInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cycles?: Prisma.CycleUpdateManyWithoutGroupNestedInput
+  treasurer?: Prisma.UserUpdateOneRequiredWithoutTreasurerOfNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutGroupNestedInput
 }
 
 export type SusuGroupUncheckedUpdateWithoutMembersInput = {
@@ -549,11 +721,13 @@ export type SusuGroupUncheckedUpdateWithoutMembersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  treasurerId?: Prisma.StringFieldUpdateOperationsInput | string
   currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
   status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   cycles?: Prisma.CycleUncheckedUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutGroupNestedInput
 }
 
 export type SusuGroupCreateWithoutCyclesInput = {
@@ -566,6 +740,8 @@ export type SusuGroupCreateWithoutCyclesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
+  treasurer: Prisma.UserCreateNestedOneWithoutTreasurerOfInput
+  invitations?: Prisma.InvitationCreateNestedManyWithoutGroupInput
 }
 
 export type SusuGroupUncheckedCreateWithoutCyclesInput = {
@@ -573,11 +749,13 @@ export type SusuGroupUncheckedCreateWithoutCyclesInput = {
   name: string
   contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
   frequency: $Enums.Frequency
+  treasurerId: string
   currentCycle?: number
   status?: $Enums.GroupStatus
   createdAt?: Date | string
   updatedAt?: Date | string
   members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
+  invitations?: Prisma.InvitationUncheckedCreateNestedManyWithoutGroupInput
 }
 
 export type SusuGroupCreateOrConnectWithoutCyclesInput = {
@@ -606,9 +784,122 @@ export type SusuGroupUpdateWithoutCyclesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
+  treasurer?: Prisma.UserUpdateOneRequiredWithoutTreasurerOfNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutGroupNestedInput
 }
 
 export type SusuGroupUncheckedUpdateWithoutCyclesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  treasurerId?: Prisma.StringFieldUpdateOperationsInput | string
+  currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutGroupNestedInput
+}
+
+export type SusuGroupCreateWithoutInvitationsInput = {
+  id?: string
+  name: string
+  contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency: $Enums.Frequency
+  currentCycle?: number
+  status?: $Enums.GroupStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.GroupMemberCreateNestedManyWithoutGroupInput
+  cycles?: Prisma.CycleCreateNestedManyWithoutGroupInput
+  treasurer: Prisma.UserCreateNestedOneWithoutTreasurerOfInput
+}
+
+export type SusuGroupUncheckedCreateWithoutInvitationsInput = {
+  id?: string
+  name: string
+  contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency: $Enums.Frequency
+  treasurerId: string
+  currentCycle?: number
+  status?: $Enums.GroupStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutGroupInput
+  cycles?: Prisma.CycleUncheckedCreateNestedManyWithoutGroupInput
+}
+
+export type SusuGroupCreateOrConnectWithoutInvitationsInput = {
+  where: Prisma.SusuGroupWhereUniqueInput
+  create: Prisma.XOR<Prisma.SusuGroupCreateWithoutInvitationsInput, Prisma.SusuGroupUncheckedCreateWithoutInvitationsInput>
+}
+
+export type SusuGroupUpsertWithoutInvitationsInput = {
+  update: Prisma.XOR<Prisma.SusuGroupUpdateWithoutInvitationsInput, Prisma.SusuGroupUncheckedUpdateWithoutInvitationsInput>
+  create: Prisma.XOR<Prisma.SusuGroupCreateWithoutInvitationsInput, Prisma.SusuGroupUncheckedCreateWithoutInvitationsInput>
+  where?: Prisma.SusuGroupWhereInput
+}
+
+export type SusuGroupUpdateToOneWithWhereWithoutInvitationsInput = {
+  where?: Prisma.SusuGroupWhereInput
+  data: Prisma.XOR<Prisma.SusuGroupUpdateWithoutInvitationsInput, Prisma.SusuGroupUncheckedUpdateWithoutInvitationsInput>
+}
+
+export type SusuGroupUpdateWithoutInvitationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
+  cycles?: Prisma.CycleUpdateManyWithoutGroupNestedInput
+  treasurer?: Prisma.UserUpdateOneRequiredWithoutTreasurerOfNestedInput
+}
+
+export type SusuGroupUncheckedUpdateWithoutInvitationsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  treasurerId?: Prisma.StringFieldUpdateOperationsInput | string
+  currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
+  cycles?: Prisma.CycleUncheckedUpdateManyWithoutGroupNestedInput
+}
+
+export type SusuGroupCreateManyTreasurerInput = {
+  id?: string
+  name: string
+  contributionAmount: runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency: $Enums.Frequency
+  currentCycle?: number
+  status?: $Enums.GroupStatus
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type SusuGroupUpdateWithoutTreasurerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.GroupMemberUpdateManyWithoutGroupNestedInput
+  cycles?: Prisma.CycleUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.InvitationUpdateManyWithoutGroupNestedInput
+}
+
+export type SusuGroupUncheckedUpdateWithoutTreasurerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   name?: Prisma.StringFieldUpdateOperationsInput | string
   contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -618,6 +909,19 @@ export type SusuGroupUncheckedUpdateWithoutCyclesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.GroupMemberUncheckedUpdateManyWithoutGroupNestedInput
+  cycles?: Prisma.CycleUncheckedUpdateManyWithoutGroupNestedInput
+  invitations?: Prisma.InvitationUncheckedUpdateManyWithoutGroupNestedInput
+}
+
+export type SusuGroupUncheckedUpdateManyWithoutTreasurerInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  contributionAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  frequency?: Prisma.EnumFrequencyFieldUpdateOperationsInput | $Enums.Frequency
+  currentCycle?: Prisma.IntFieldUpdateOperationsInput | number
+  status?: Prisma.EnumGroupStatusFieldUpdateOperationsInput | $Enums.GroupStatus
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 
@@ -628,11 +932,13 @@ export type SusuGroupUncheckedUpdateWithoutCyclesInput = {
 export type SusuGroupCountOutputType = {
   members: number
   cycles: number
+  invitations: number
 }
 
 export type SusuGroupCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | SusuGroupCountOutputTypeCountMembersArgs
   cycles?: boolean | SusuGroupCountOutputTypeCountCyclesArgs
+  invitations?: boolean | SusuGroupCountOutputTypeCountInvitationsArgs
 }
 
 /**
@@ -659,18 +965,28 @@ export type SusuGroupCountOutputTypeCountCyclesArgs<ExtArgs extends runtime.Type
   where?: Prisma.CycleWhereInput
 }
 
+/**
+ * SusuGroupCountOutputType without action
+ */
+export type SusuGroupCountOutputTypeCountInvitationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InvitationWhereInput
+}
+
 
 export type SusuGroupSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   name?: boolean
   contributionAmount?: boolean
   frequency?: boolean
+  treasurerId?: boolean
   currentCycle?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   members?: boolean | Prisma.SusuGroup$membersArgs<ExtArgs>
   cycles?: boolean | Prisma.SusuGroup$cyclesArgs<ExtArgs>
+  treasurer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  invitations?: boolean | Prisma.SusuGroup$invitationsArgs<ExtArgs>
   _count?: boolean | Prisma.SusuGroupCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["susuGroup"]>
 
@@ -679,10 +995,12 @@ export type SusuGroupSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   name?: boolean
   contributionAmount?: boolean
   frequency?: boolean
+  treasurerId?: boolean
   currentCycle?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  treasurer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["susuGroup"]>
 
 export type SusuGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -690,10 +1008,12 @@ export type SusuGroupSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   name?: boolean
   contributionAmount?: boolean
   frequency?: boolean
+  treasurerId?: boolean
   currentCycle?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  treasurer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["susuGroup"]>
 
 export type SusuGroupSelectScalar = {
@@ -701,32 +1021,42 @@ export type SusuGroupSelectScalar = {
   name?: boolean
   contributionAmount?: boolean
   frequency?: boolean
+  treasurerId?: boolean
   currentCycle?: boolean
   status?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type SusuGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "contributionAmount" | "frequency" | "currentCycle" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["susuGroup"]>
+export type SusuGroupOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "contributionAmount" | "frequency" | "treasurerId" | "currentCycle" | "status" | "createdAt" | "updatedAt", ExtArgs["result"]["susuGroup"]>
 export type SusuGroupInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | Prisma.SusuGroup$membersArgs<ExtArgs>
   cycles?: boolean | Prisma.SusuGroup$cyclesArgs<ExtArgs>
+  treasurer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  invitations?: boolean | Prisma.SusuGroup$invitationsArgs<ExtArgs>
   _count?: boolean | Prisma.SusuGroupCountOutputTypeDefaultArgs<ExtArgs>
 }
-export type SusuGroupIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
-export type SusuGroupIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
+export type SusuGroupIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  treasurer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
+export type SusuGroupIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  treasurer?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+}
 
 export type $SusuGroupPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "SusuGroup"
   objects: {
     members: Prisma.$GroupMemberPayload<ExtArgs>[]
     cycles: Prisma.$CyclePayload<ExtArgs>[]
+    treasurer: Prisma.$UserPayload<ExtArgs>
+    invitations: Prisma.$InvitationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     name: string
     contributionAmount: runtime.Decimal
     frequency: $Enums.Frequency
+    treasurerId: string
     currentCycle: number
     status: $Enums.GroupStatus
     createdAt: Date
@@ -1127,6 +1457,8 @@ export interface Prisma__SusuGroupClient<T, Null = never, ExtArgs extends runtim
   readonly [Symbol.toStringTag]: "PrismaPromise"
   members<T extends Prisma.SusuGroup$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SusuGroup$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   cycles<T extends Prisma.SusuGroup$cyclesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SusuGroup$cyclesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CyclePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  treasurer<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  invitations<T extends Prisma.SusuGroup$invitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SusuGroup$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1160,6 +1492,7 @@ export interface SusuGroupFieldRefs {
   readonly name: Prisma.FieldRef<"SusuGroup", 'String'>
   readonly contributionAmount: Prisma.FieldRef<"SusuGroup", 'Decimal'>
   readonly frequency: Prisma.FieldRef<"SusuGroup", 'Frequency'>
+  readonly treasurerId: Prisma.FieldRef<"SusuGroup", 'String'>
   readonly currentCycle: Prisma.FieldRef<"SusuGroup", 'Int'>
   readonly status: Prisma.FieldRef<"SusuGroup", 'GroupStatus'>
   readonly createdAt: Prisma.FieldRef<"SusuGroup", 'DateTime'>
@@ -1418,6 +1751,10 @@ export type SusuGroupCreateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    */
   data: Prisma.SusuGroupCreateManyInput | Prisma.SusuGroupCreateManyInput[]
   skipDuplicates?: boolean
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SusuGroupIncludeCreateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1488,6 +1825,10 @@ export type SusuGroupUpdateManyAndReturnArgs<ExtArgs extends runtime.Types.Exten
    * Limit how many SusuGroups to update.
    */
   limit?: number
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SusuGroupIncludeUpdateManyAndReturn<ExtArgs> | null
 }
 
 /**
@@ -1602,6 +1943,30 @@ export type SusuGroup$cyclesArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.CycleScalarFieldEnum | Prisma.CycleScalarFieldEnum[]
+}
+
+/**
+ * SusuGroup.invitations
+ */
+export type SusuGroup$invitationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Invitation
+   */
+  select?: Prisma.InvitationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Invitation
+   */
+  omit?: Prisma.InvitationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InvitationInclude<ExtArgs> | null
+  where?: Prisma.InvitationWhereInput
+  orderBy?: Prisma.InvitationOrderByWithRelationInput | Prisma.InvitationOrderByWithRelationInput[]
+  cursor?: Prisma.InvitationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InvitationScalarFieldEnum | Prisma.InvitationScalarFieldEnum[]
 }
 
 /**

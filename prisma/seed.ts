@@ -2,10 +2,13 @@
 // Seeds a test group with 5 members for local development
 // Run with: npm run db:seed
 
-import { PrismaClient } from "@prisma/client";
+import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../src/generated/prisma/client/client";
 import bcrypt from "bcryptjs";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL ?? "" });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Seeding MoneyLoop database...");
@@ -49,27 +52,48 @@ async function main() {
   // Create the MoneyLoop group
   const group = await prisma.susuGroup.upsert({
     where: { id: "seed-group-001" },
-    update: {},
+    update: {
+      treasurerId: admin.id,
+    },
     create: {
       id: "seed-group-001",
       name: "MoneyLoop Group",
       contributionAmount: 100.00, // GHS 100 per member
       frequency: "MONTHLY",
+      treasurerId: admin.id,
       currentCycle: 1,
       status: "ACTIVE",
     },
   });
 
   // Add members to group with payout positions
+  await prisma.groupMember.upsert({
+    where: { groupId_userId: { groupId: group.id, userId: admin.id } },
+    update: {
+      payoutPosition: null,
+      memberRole: "TREASURER",
+    },
+    create: {
+      userId: admin.id,
+      groupId: group.id,
+      payoutPosition: null,
+      memberRole: "TREASURER",
+    },
+  });
+
   await Promise.all(
     members.map((member, index) =>
       prisma.groupMember.upsert({
         where: { groupId_userId: { groupId: group.id, userId: member.id } },
-        update: {},
+        update: {
+          payoutPosition: index + 1,
+          memberRole: "MEMBER",
+        },
         create: {
           userId: member.id,
           groupId: group.id,
           payoutPosition: index + 1,
+          memberRole: "MEMBER",
         },
       })
     )
@@ -94,7 +118,7 @@ async function main() {
   console.log(`
 ✓ Admin:   admin@moneyloop.gh / password123
 ✓ Members: akosua@test.com ... ama@test.com / password123
-✓ Group:   MoneyLoop Group (GHS 100/month, 5 members)
+✓ Group:   MoneyLoop Group (GHS 100/month, treasurer + 5 members)
 ✓ Cycle 1: Akosua Mensah receives payout on the 28th
   `);
 }

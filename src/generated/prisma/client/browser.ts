@@ -47,3 +47,8 @@ export type Contribution = Prisma.ContributionModel
  * 
  */
 export type Payout = Prisma.PayoutModel
+/**
+ * Model Invitation
+ * 
+ */
+export type Invitation = Prisma.InvitationModel

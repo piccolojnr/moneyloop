@@ -225,6 +225,7 @@ export type UserWhereInput = {
   groupMemberships?: Prisma.GroupMemberListRelationFilter
   contributions?: Prisma.ContributionListRelationFilter
   payoutsReceived?: Prisma.PayoutListRelationFilter
+  treasurerOf?: Prisma.SusuGroupListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -241,6 +242,7 @@ export type UserOrderByWithRelationInput = {
   groupMemberships?: Prisma.GroupMemberOrderByRelationAggregateInput
   contributions?: Prisma.ContributionOrderByRelationAggregateInput
   payoutsReceived?: Prisma.PayoutOrderByRelationAggregateInput
+  treasurerOf?: Prisma.SusuGroupOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -260,6 +262,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   groupMemberships?: Prisma.GroupMemberListRelationFilter
   contributions?: Prisma.ContributionListRelationFilter
   payoutsReceived?: Prisma.PayoutListRelationFilter
+  treasurerOf?: Prisma.SusuGroupListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -308,6 +311,7 @@ export type UserCreateInput = {
   groupMemberships?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
   contributions?: Prisma.ContributionCreateNestedManyWithoutUserInput
   payoutsReceived?: Prisma.PayoutCreateNestedManyWithoutRecipientInput
+  treasurerOf?: Prisma.SusuGroupCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -324,6 +328,7 @@ export type UserUncheckedCreateInput = {
   groupMemberships?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
   contributions?: Prisma.ContributionUncheckedCreateNestedManyWithoutUserInput
   payoutsReceived?: Prisma.PayoutUncheckedCreateNestedManyWithoutRecipientInput
+  treasurerOf?: Prisma.SusuGroupUncheckedCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserUpdateInput = {
@@ -340,6 +345,7 @@ export type UserUpdateInput = {
   groupMemberships?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
   contributions?: Prisma.ContributionUpdateManyWithoutUserNestedInput
   payoutsReceived?: Prisma.PayoutUpdateManyWithoutRecipientNestedInput
+  treasurerOf?: Prisma.SusuGroupUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -356,6 +362,7 @@ export type UserUncheckedUpdateInput = {
   groupMemberships?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
   contributions?: Prisma.ContributionUncheckedUpdateManyWithoutUserNestedInput
   payoutsReceived?: Prisma.PayoutUncheckedUpdateManyWithoutRecipientNestedInput
+  treasurerOf?: Prisma.SusuGroupUncheckedUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -453,6 +460,20 @@ export type DateTimeFieldUpdateOperationsInput = {
   set?: Date | string
 }
 
+export type UserCreateNestedOneWithoutTreasurerOfInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTreasurerOfInput, Prisma.UserUncheckedCreateWithoutTreasurerOfInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTreasurerOfInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutTreasurerOfNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutTreasurerOfInput, Prisma.UserUncheckedCreateWithoutTreasurerOfInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutTreasurerOfInput
+  upsert?: Prisma.UserUpsertWithoutTreasurerOfInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutTreasurerOfInput, Prisma.UserUpdateWithoutTreasurerOfInput>, Prisma.UserUncheckedUpdateWithoutTreasurerOfInput>
+}
+
 export type UserCreateNestedOneWithoutGroupMembershipsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutGroupMembershipsInput, Prisma.UserUncheckedCreateWithoutGroupMembershipsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutGroupMembershipsInput
@@ -495,6 +516,86 @@ export type UserUpdateOneRequiredWithoutPayoutsReceivedNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutPayoutsReceivedInput, Prisma.UserUpdateWithoutPayoutsReceivedInput>, Prisma.UserUncheckedUpdateWithoutPayoutsReceivedInput>
 }
 
+export type UserCreateWithoutTreasurerOfInput = {
+  id?: string
+  name: string
+  email: string
+  phone: string
+  momoNumber: string
+  momoNetwork?: string
+  role?: $Enums.Role
+  password: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  groupMemberships?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
+  contributions?: Prisma.ContributionCreateNestedManyWithoutUserInput
+  payoutsReceived?: Prisma.PayoutCreateNestedManyWithoutRecipientInput
+}
+
+export type UserUncheckedCreateWithoutTreasurerOfInput = {
+  id?: string
+  name: string
+  email: string
+  phone: string
+  momoNumber: string
+  momoNetwork?: string
+  role?: $Enums.Role
+  password: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  groupMemberships?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
+  contributions?: Prisma.ContributionUncheckedCreateNestedManyWithoutUserInput
+  payoutsReceived?: Prisma.PayoutUncheckedCreateNestedManyWithoutRecipientInput
+}
+
+export type UserCreateOrConnectWithoutTreasurerOfInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutTreasurerOfInput, Prisma.UserUncheckedCreateWithoutTreasurerOfInput>
+}
+
+export type UserUpsertWithoutTreasurerOfInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutTreasurerOfInput, Prisma.UserUncheckedUpdateWithoutTreasurerOfInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutTreasurerOfInput, Prisma.UserUncheckedCreateWithoutTreasurerOfInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutTreasurerOfInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutTreasurerOfInput, Prisma.UserUncheckedUpdateWithoutTreasurerOfInput>
+}
+
+export type UserUpdateWithoutTreasurerOfInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  groupMemberships?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
+  contributions?: Prisma.ContributionUpdateManyWithoutUserNestedInput
+  payoutsReceived?: Prisma.PayoutUpdateManyWithoutRecipientNestedInput
+}
+
+export type UserUncheckedUpdateWithoutTreasurerOfInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
+  password?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  groupMemberships?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
+  contributions?: Prisma.ContributionUncheckedUpdateManyWithoutUserNestedInput
+  payoutsReceived?: Prisma.PayoutUncheckedUpdateManyWithoutRecipientNestedInput
+}
+
 export type UserCreateWithoutGroupMembershipsInput = {
   id?: string
   name: string
@@ -508,6 +609,7 @@ export type UserCreateWithoutGroupMembershipsInput = {
   updatedAt?: Date | string
   contributions?: Prisma.ContributionCreateNestedManyWithoutUserInput
   payoutsReceived?: Prisma.PayoutCreateNestedManyWithoutRecipientInput
+  treasurerOf?: Prisma.SusuGroupCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserUncheckedCreateWithoutGroupMembershipsInput = {
@@ -523,6 +625,7 @@ export type UserUncheckedCreateWithoutGroupMembershipsInput = {
   updatedAt?: Date | string
   contributions?: Prisma.ContributionUncheckedCreateNestedManyWithoutUserInput
   payoutsReceived?: Prisma.PayoutUncheckedCreateNestedManyWithoutRecipientInput
+  treasurerOf?: Prisma.SusuGroupUncheckedCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserCreateOrConnectWithoutGroupMembershipsInput = {
@@ -554,6 +657,7 @@ export type UserUpdateWithoutGroupMembershipsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contributions?: Prisma.ContributionUpdateManyWithoutUserNestedInput
   payoutsReceived?: Prisma.PayoutUpdateManyWithoutRecipientNestedInput
+  treasurerOf?: Prisma.SusuGroupUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
@@ -569,6 +673,7 @@ export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   contributions?: Prisma.ContributionUncheckedUpdateManyWithoutUserNestedInput
   payoutsReceived?: Prisma.PayoutUncheckedUpdateManyWithoutRecipientNestedInput
+  treasurerOf?: Prisma.SusuGroupUncheckedUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserCreateWithoutContributionsInput = {
@@ -584,6 +689,7 @@ export type UserCreateWithoutContributionsInput = {
   updatedAt?: Date | string
   groupMemberships?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
   payoutsReceived?: Prisma.PayoutCreateNestedManyWithoutRecipientInput
+  treasurerOf?: Prisma.SusuGroupCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserUncheckedCreateWithoutContributionsInput = {
@@ -599,6 +705,7 @@ export type UserUncheckedCreateWithoutContributionsInput = {
   updatedAt?: Date | string
   groupMemberships?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
   payoutsReceived?: Prisma.PayoutUncheckedCreateNestedManyWithoutRecipientInput
+  treasurerOf?: Prisma.SusuGroupUncheckedCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserCreateOrConnectWithoutContributionsInput = {
@@ -630,6 +737,7 @@ export type UserUpdateWithoutContributionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupMemberships?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
   payoutsReceived?: Prisma.PayoutUpdateManyWithoutRecipientNestedInput
+  treasurerOf?: Prisma.SusuGroupUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutContributionsInput = {
@@ -645,6 +753,7 @@ export type UserUncheckedUpdateWithoutContributionsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupMemberships?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
   payoutsReceived?: Prisma.PayoutUncheckedUpdateManyWithoutRecipientNestedInput
+  treasurerOf?: Prisma.SusuGroupUncheckedUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserCreateWithoutPayoutsReceivedInput = {
@@ -660,6 +769,7 @@ export type UserCreateWithoutPayoutsReceivedInput = {
   updatedAt?: Date | string
   groupMemberships?: Prisma.GroupMemberCreateNestedManyWithoutUserInput
   contributions?: Prisma.ContributionCreateNestedManyWithoutUserInput
+  treasurerOf?: Prisma.SusuGroupCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserUncheckedCreateWithoutPayoutsReceivedInput = {
@@ -675,6 +785,7 @@ export type UserUncheckedCreateWithoutPayoutsReceivedInput = {
   updatedAt?: Date | string
   groupMemberships?: Prisma.GroupMemberUncheckedCreateNestedManyWithoutUserInput
   contributions?: Prisma.ContributionUncheckedCreateNestedManyWithoutUserInput
+  treasurerOf?: Prisma.SusuGroupUncheckedCreateNestedManyWithoutTreasurerInput
 }
 
 export type UserCreateOrConnectWithoutPayoutsReceivedInput = {
@@ -706,6 +817,7 @@ export type UserUpdateWithoutPayoutsReceivedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupMemberships?: Prisma.GroupMemberUpdateManyWithoutUserNestedInput
   contributions?: Prisma.ContributionUpdateManyWithoutUserNestedInput
+  treasurerOf?: Prisma.SusuGroupUpdateManyWithoutTreasurerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutPayoutsReceivedInput = {
@@ -721,6 +833,7 @@ export type UserUncheckedUpdateWithoutPayoutsReceivedInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   groupMemberships?: Prisma.GroupMemberUncheckedUpdateManyWithoutUserNestedInput
   contributions?: Prisma.ContributionUncheckedUpdateManyWithoutUserNestedInput
+  treasurerOf?: Prisma.SusuGroupUncheckedUpdateManyWithoutTreasurerNestedInput
 }
 
 
@@ -732,12 +845,14 @@ export type UserCountOutputType = {
   groupMemberships: number
   contributions: number
   payoutsReceived: number
+  treasurerOf: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupMemberships?: boolean | UserCountOutputTypeCountGroupMembershipsArgs
   contributions?: boolean | UserCountOutputTypeCountContributionsArgs
   payoutsReceived?: boolean | UserCountOutputTypeCountPayoutsReceivedArgs
+  treasurerOf?: boolean | UserCountOutputTypeCountTreasurerOfArgs
 }
 
 /**
@@ -771,6 +886,13 @@ export type UserCountOutputTypeCountPayoutsReceivedArgs<ExtArgs extends runtime.
   where?: Prisma.PayoutWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountTreasurerOfArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SusuGroupWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -786,6 +908,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   groupMemberships?: boolean | Prisma.User$groupMembershipsArgs<ExtArgs>
   contributions?: boolean | Prisma.User$contributionsArgs<ExtArgs>
   payoutsReceived?: boolean | Prisma.User$payoutsReceivedArgs<ExtArgs>
+  treasurerOf?: boolean | Prisma.User$treasurerOfArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -833,6 +956,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   groupMemberships?: boolean | Prisma.User$groupMembershipsArgs<ExtArgs>
   contributions?: boolean | Prisma.User$contributionsArgs<ExtArgs>
   payoutsReceived?: boolean | Prisma.User$payoutsReceivedArgs<ExtArgs>
+  treasurerOf?: boolean | Prisma.User$treasurerOfArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -844,6 +968,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     groupMemberships: Prisma.$GroupMemberPayload<ExtArgs>[]
     contributions: Prisma.$ContributionPayload<ExtArgs>[]
     payoutsReceived: Prisma.$PayoutPayload<ExtArgs>[]
+    treasurerOf: Prisma.$SusuGroupPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1253,6 +1378,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   groupMemberships<T extends Prisma.User$groupMembershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$groupMembershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GroupMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   contributions<T extends Prisma.User$contributionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$contributionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContributionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   payoutsReceived<T extends Prisma.User$payoutsReceivedArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$payoutsReceivedArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PayoutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  treasurerOf<T extends Prisma.User$treasurerOfArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$treasurerOfArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SusuGroupPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1754,6 +1880,30 @@ export type User$payoutsReceivedArgs<ExtArgs extends runtime.Types.Extensions.In
   take?: number
   skip?: number
   distinct?: Prisma.PayoutScalarFieldEnum | Prisma.PayoutScalarFieldEnum[]
+}
+
+/**
+ * User.treasurerOf
+ */
+export type User$treasurerOfArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SusuGroup
+   */
+  select?: Prisma.SusuGroupSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SusuGroup
+   */
+  omit?: Prisma.SusuGroupOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SusuGroupInclude<ExtArgs> | null
+  where?: Prisma.SusuGroupWhereInput
+  orderBy?: Prisma.SusuGroupOrderByWithRelationInput | Prisma.SusuGroupOrderByWithRelationInput[]
+  cursor?: Prisma.SusuGroupWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SusuGroupScalarFieldEnum | Prisma.SusuGroupScalarFieldEnum[]
 }
 
 /**

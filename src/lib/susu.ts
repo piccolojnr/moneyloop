@@ -35,9 +35,15 @@ export async function bootstrapFirstCycle(groupId: string, payoutDate: Date) {
     include: { members: { include: { user: true }, orderBy: { payoutPosition: "asc" } } },
   });
 
-  if (group.members.length === 0) throw new Error("Group has no members");
+  const positionedMembers = group.members.filter(
+    (member) => member.payoutPosition !== null
+  );
 
-  const recipient = group.members[0]; // position 1 goes first
+  if (positionedMembers.length === 0) {
+    throw new Error("Group has no members with payout positions");
+  }
+
+  const recipient = positionedMembers[0]; // lowest position goes first
 
   return prisma.cycle.create({
     data: {

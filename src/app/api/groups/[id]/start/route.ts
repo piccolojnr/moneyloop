@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/session";
+import { getRequiredSession } from "@/lib/session";
 import { bootstrapFirstCycle } from "@/lib/susu";
 
 const StartGroupSchema = z.object({
@@ -18,13 +18,23 @@ function handleRouteError(error: unknown) {
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 }
 
+async function getSessionUserId() {
+  const session = await getRequiredSession();
+  const userId = (session.user as { id?: string }).id;
+
+  if (!userId) {
+    throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return userId;
+}
+
 export async function POST(
   req: Request,
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    await requireAdmin();
-
+    const userId = await getSessionUserId();
     const { id: groupId } = await context.params;
     const body = await req.json();
     const parsed = StartGroupSchema.safeParse(body);
@@ -36,11 +46,20 @@ export async function POST(
       );
     }
 
-    const group = await prisma.susuGroup.findUnique({
-      where: { id: groupId },
+    const group = await prisma.susuGroup.findFirst({
+      where: {
+        id: groupId,
+        treasurerId: userId,
+      },
       select: {
         id: true,
         status: true,
+        members: {
+          select: {
+            userId: true,
+            payoutPosition: true,
+          },
+        },
         cycles: {
           select: { id: true },
           take: 1,
@@ -49,7 +68,10 @@ export async function POST(
     });
 
     if (!group) {
-      return NextResponse.json({ error: "Group not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Only the group treasurer can start the group" },
+        { status: 403 }
+      );
     }
 
     if (group.status !== "ACTIVE") {
@@ -62,6 +84,20 @@ export async function POST(
     if (group.cycles.length > 0) {
       return NextResponse.json(
         { error: "This group has already been started" },
+        { status: 409 }
+      );
+    }
+
+    if (group.members.length === 0) {
+      return NextResponse.json(
+        { error: "Add members to the group before starting the first cycle" },
+        { status: 409 }
+      );
+    }
+
+    if (group.members.some((member) => member.payoutPosition === null)) {
+      return NextResponse.json(
+        { error: "All members must have a payout position before starting the group" },
         { status: 409 }
       );
     }
@@ -82,7 +118,10 @@ export async function POST(
       { status: 201 }
     );
   } catch (error) {
-    if (error instanceof Error && error.message === "Group has no members") {
+    if (
+      error instanceof Error &&
+      error.message === "Group has no members with payout positions"
+    ) {
       return NextResponse.json({ error: error.message }, { status: 409 });
     }
 

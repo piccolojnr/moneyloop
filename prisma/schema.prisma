@@ -31,6 +31,11 @@ enum GroupStatus {
   COMPLETED
 }
 
+enum GroupMemberRole {
+  TREASURER
+  MEMBER
+}
+
 enum CycleStatus {
   PENDING // Contributions being collected
   READY // All contributions in, awaiting payout
@@ -70,6 +75,7 @@ model User {
   groupMemberships GroupMember[]
   contributions    Contribution[]
   payoutsReceived  Payout[]
+  treasurerOf      SusuGroup[]  @relation("TreasurerGroups")
 
   @@map("users")
 }
@@ -79,24 +85,28 @@ model SusuGroup {
   name               String
   contributionAmount Decimal     @db.Decimal(10, 2)
   frequency          Frequency
+  treasurerId        String
   currentCycle       Int         @default(1)
   status             GroupStatus @default(ACTIVE)
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
 
   // Relations
-  members GroupMember[]
-  cycles  Cycle[]
+  members      GroupMember[]
+  cycles       Cycle[]
+  treasurer    User         @relation("TreasurerGroups", fields: [treasurerId], references: [id])
+  invitations  Invitation[]
 
   @@map("susu_groups")
 }
 
 model GroupMember {
-  id             String   @id @default(uuid())
+  id             String          @id @default(uuid())
   userId         String
   groupId        String
-  payoutPosition Int // 1-based position in rotation
-  joinedAt       DateTime @default(now())
+  payoutPosition Int? // 1-based position in rotation
+  memberRole     GroupMemberRole @default(MEMBER)
+  joinedAt       DateTime        @default(now())
 
   // Relations
   user  User      @relation(fields: [userId], references: [id])
@@ -163,4 +173,18 @@ model Payout {
   recipient User  @relation(fields: [recipientId], references: [id])
 
   @@map("payouts")
+}
+
+model Invitation {
+  id        String    @id @default(uuid())
+  groupId   String
+  email     String?
+  token     String    @unique @default(cuid())
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  group SusuGroup @relation(fields: [groupId], references: [id])
+
+  @@map("invitations")
 }

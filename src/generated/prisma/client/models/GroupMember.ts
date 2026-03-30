@@ -39,6 +39,7 @@ export type GroupMemberMinAggregateOutputType = {
   userId: string | null
   groupId: string | null
   payoutPosition: number | null
+  memberRole: $Enums.GroupMemberRole | null
   joinedAt: Date | null
 }
 
@@ -47,6 +48,7 @@ export type GroupMemberMaxAggregateOutputType = {
   userId: string | null
   groupId: string | null
   payoutPosition: number | null
+  memberRole: $Enums.GroupMemberRole | null
   joinedAt: Date | null
 }
 
@@ -55,6 +57,7 @@ export type GroupMemberCountAggregateOutputType = {
   userId: number
   groupId: number
   payoutPosition: number
+  memberRole: number
   joinedAt: number
   _all: number
 }
@@ -73,6 +76,7 @@ export type GroupMemberMinAggregateInputType = {
   userId?: true
   groupId?: true
   payoutPosition?: true
+  memberRole?: true
   joinedAt?: true
 }
 
@@ -81,6 +85,7 @@ export type GroupMemberMaxAggregateInputType = {
   userId?: true
   groupId?: true
   payoutPosition?: true
+  memberRole?: true
   joinedAt?: true
 }
 
@@ -89,6 +94,7 @@ export type GroupMemberCountAggregateInputType = {
   userId?: true
   groupId?: true
   payoutPosition?: true
+  memberRole?: true
   joinedAt?: true
   _all?: true
 }
@@ -183,7 +189,8 @@ export type GroupMemberGroupByOutputType = {
   id: string
   userId: string
   groupId: string
-  payoutPosition: number
+  payoutPosition: number | null
+  memberRole: $Enums.GroupMemberRole
   joinedAt: Date
   _count: GroupMemberCountAggregateOutputType | null
   _avg: GroupMemberAvgAggregateOutputType | null
@@ -214,7 +221,8 @@ export type GroupMemberWhereInput = {
   id?: Prisma.StringFilter<"GroupMember"> | string
   userId?: Prisma.StringFilter<"GroupMember"> | string
   groupId?: Prisma.StringFilter<"GroupMember"> | string
-  payoutPosition?: Prisma.IntFilter<"GroupMember"> | number
+  payoutPosition?: Prisma.IntNullableFilter<"GroupMember"> | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFilter<"GroupMember"> | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFilter<"GroupMember"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   group?: Prisma.XOR<Prisma.SusuGroupScalarRelationFilter, Prisma.SusuGroupWhereInput>
@@ -224,7 +232,8 @@ export type GroupMemberOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
-  payoutPosition?: Prisma.SortOrder
+  payoutPosition?: Prisma.SortOrderInput | Prisma.SortOrder
+  memberRole?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   user?: Prisma.UserOrderByWithRelationInput
   group?: Prisma.SusuGroupOrderByWithRelationInput
@@ -239,7 +248,8 @@ export type GroupMemberWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.GroupMemberWhereInput | Prisma.GroupMemberWhereInput[]
   userId?: Prisma.StringFilter<"GroupMember"> | string
   groupId?: Prisma.StringFilter<"GroupMember"> | string
-  payoutPosition?: Prisma.IntFilter<"GroupMember"> | number
+  payoutPosition?: Prisma.IntNullableFilter<"GroupMember"> | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFilter<"GroupMember"> | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFilter<"GroupMember"> | Date | string
   user?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   group?: Prisma.XOR<Prisma.SusuGroupScalarRelationFilter, Prisma.SusuGroupWhereInput>
@@ -249,7 +259,8 @@ export type GroupMemberOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   userId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
-  payoutPosition?: Prisma.SortOrder
+  payoutPosition?: Prisma.SortOrderInput | Prisma.SortOrder
+  memberRole?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
   _count?: Prisma.GroupMemberCountOrderByAggregateInput
   _avg?: Prisma.GroupMemberAvgOrderByAggregateInput
@@ -265,13 +276,15 @@ export type GroupMemberScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"GroupMember"> | string
   userId?: Prisma.StringWithAggregatesFilter<"GroupMember"> | string
   groupId?: Prisma.StringWithAggregatesFilter<"GroupMember"> | string
-  payoutPosition?: Prisma.IntWithAggregatesFilter<"GroupMember"> | number
+  payoutPosition?: Prisma.IntNullableWithAggregatesFilter<"GroupMember"> | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleWithAggregatesFilter<"GroupMember"> | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeWithAggregatesFilter<"GroupMember"> | Date | string
 }
 
 export type GroupMemberCreateInput = {
   id?: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutGroupMembershipsInput
   group: Prisma.SusuGroupCreateNestedOneWithoutMembersInput
@@ -281,13 +294,15 @@ export type GroupMemberUncheckedCreateInput = {
   id?: string
   userId: string
   groupId: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
 }
 
 export type GroupMemberUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutGroupMembershipsNestedInput
   group?: Prisma.SusuGroupUpdateOneRequiredWithoutMembersNestedInput
@@ -297,7 +312,8 @@ export type GroupMemberUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -305,13 +321,15 @@ export type GroupMemberCreateManyInput = {
   id?: string
   userId: string
   groupId: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
 }
 
 export type GroupMemberUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -319,7 +337,8 @@ export type GroupMemberUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -348,6 +367,7 @@ export type GroupMemberCountOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   payoutPosition?: Prisma.SortOrder
+  memberRole?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
 }
 
@@ -360,6 +380,7 @@ export type GroupMemberMaxOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   payoutPosition?: Prisma.SortOrder
+  memberRole?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
 }
 
@@ -368,6 +389,7 @@ export type GroupMemberMinOrderByAggregateInput = {
   userId?: Prisma.SortOrder
   groupId?: Prisma.SortOrder
   payoutPosition?: Prisma.SortOrder
+  memberRole?: Prisma.SortOrder
   joinedAt?: Prisma.SortOrder
 }
 
@@ -459,9 +481,22 @@ export type GroupMemberUncheckedUpdateManyWithoutGroupNestedInput = {
   deleteMany?: Prisma.GroupMemberScalarWhereInput | Prisma.GroupMemberScalarWhereInput[]
 }
 
+export type NullableIntFieldUpdateOperationsInput = {
+  set?: number | null
+  increment?: number
+  decrement?: number
+  multiply?: number
+  divide?: number
+}
+
+export type EnumGroupMemberRoleFieldUpdateOperationsInput = {
+  set?: $Enums.GroupMemberRole
+}
+
 export type GroupMemberCreateWithoutUserInput = {
   id?: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
   group: Prisma.SusuGroupCreateNestedOneWithoutMembersInput
 }
@@ -469,7 +504,8 @@ export type GroupMemberCreateWithoutUserInput = {
 export type GroupMemberUncheckedCreateWithoutUserInput = {
   id?: string
   groupId: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
 }
 
@@ -506,13 +542,15 @@ export type GroupMemberScalarWhereInput = {
   id?: Prisma.StringFilter<"GroupMember"> | string
   userId?: Prisma.StringFilter<"GroupMember"> | string
   groupId?: Prisma.StringFilter<"GroupMember"> | string
-  payoutPosition?: Prisma.IntFilter<"GroupMember"> | number
+  payoutPosition?: Prisma.IntNullableFilter<"GroupMember"> | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFilter<"GroupMember"> | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFilter<"GroupMember"> | Date | string
 }
 
 export type GroupMemberCreateWithoutGroupInput = {
   id?: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
   user: Prisma.UserCreateNestedOneWithoutGroupMembershipsInput
 }
@@ -520,7 +558,8 @@ export type GroupMemberCreateWithoutGroupInput = {
 export type GroupMemberUncheckedCreateWithoutGroupInput = {
   id?: string
   userId: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
 }
 
@@ -553,13 +592,15 @@ export type GroupMemberUpdateManyWithWhereWithoutGroupInput = {
 export type GroupMemberCreateManyUserInput = {
   id?: string
   groupId: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
 }
 
 export type GroupMemberUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   group?: Prisma.SusuGroupUpdateOneRequiredWithoutMembersNestedInput
 }
@@ -567,27 +608,31 @@ export type GroupMemberUpdateWithoutUserInput = {
 export type GroupMemberUncheckedUpdateWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GroupMemberUncheckedUpdateManyWithoutUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   groupId?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GroupMemberCreateManyGroupInput = {
   id?: string
   userId: string
-  payoutPosition: number
+  payoutPosition?: number | null
+  memberRole?: $Enums.GroupMemberRole
   joinedAt?: Date | string
 }
 
 export type GroupMemberUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   user?: Prisma.UserUpdateOneRequiredWithoutGroupMembershipsNestedInput
 }
@@ -595,14 +640,16 @@ export type GroupMemberUpdateWithoutGroupInput = {
 export type GroupMemberUncheckedUpdateWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type GroupMemberUncheckedUpdateManyWithoutGroupInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   userId?: Prisma.StringFieldUpdateOperationsInput | string
-  payoutPosition?: Prisma.IntFieldUpdateOperationsInput | number
+  payoutPosition?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  memberRole?: Prisma.EnumGroupMemberRoleFieldUpdateOperationsInput | $Enums.GroupMemberRole
   joinedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
@@ -613,6 +660,7 @@ export type GroupMemberSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   userId?: boolean
   groupId?: boolean
   payoutPosition?: boolean
+  memberRole?: boolean
   joinedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   group?: boolean | Prisma.SusuGroupDefaultArgs<ExtArgs>
@@ -623,6 +671,7 @@ export type GroupMemberSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   userId?: boolean
   groupId?: boolean
   payoutPosition?: boolean
+  memberRole?: boolean
   joinedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   group?: boolean | Prisma.SusuGroupDefaultArgs<ExtArgs>
@@ -633,6 +682,7 @@ export type GroupMemberSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   userId?: boolean
   groupId?: boolean
   payoutPosition?: boolean
+  memberRole?: boolean
   joinedAt?: boolean
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   group?: boolean | Prisma.SusuGroupDefaultArgs<ExtArgs>
@@ -643,10 +693,11 @@ export type GroupMemberSelectScalar = {
   userId?: boolean
   groupId?: boolean
   payoutPosition?: boolean
+  memberRole?: boolean
   joinedAt?: boolean
 }
 
-export type GroupMemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "groupId" | "payoutPosition" | "joinedAt", ExtArgs["result"]["groupMember"]>
+export type GroupMemberOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "userId" | "groupId" | "payoutPosition" | "memberRole" | "joinedAt", ExtArgs["result"]["groupMember"]>
 export type GroupMemberInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   user?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   group?: boolean | Prisma.SusuGroupDefaultArgs<ExtArgs>
@@ -670,7 +721,8 @@ export type $GroupMemberPayload<ExtArgs extends runtime.Types.Extensions.Interna
     id: string
     userId: string
     groupId: string
-    payoutPosition: number
+    payoutPosition: number | null
+    memberRole: $Enums.GroupMemberRole
     joinedAt: Date
   }, ExtArgs["result"]["groupMember"]>
   composites: {}
@@ -1101,6 +1153,7 @@ export interface GroupMemberFieldRefs {
   readonly userId: Prisma.FieldRef<"GroupMember", 'String'>
   readonly groupId: Prisma.FieldRef<"GroupMember", 'String'>
   readonly payoutPosition: Prisma.FieldRef<"GroupMember", 'Int'>
+  readonly memberRole: Prisma.FieldRef<"GroupMember", 'GroupMemberRole'>
   readonly joinedAt: Prisma.FieldRef<"GroupMember", 'DateTime'>
 }
     

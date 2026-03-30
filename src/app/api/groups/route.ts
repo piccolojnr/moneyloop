@@ -2,7 +2,7 @@ import { z } from "zod";
 import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/session";
+import { getRequiredSession } from "@/lib/session";
 
 const CreateGroupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -21,11 +21,28 @@ function handleRouteError(error: unknown) {
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 }
 
+async function getSessionUserId() {
+  const session = await getRequiredSession();
+  const userId = (session.user as { id?: string }).id;
+
+  if (!userId) {
+    throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  return userId;
+}
+
 export async function GET() {
   try {
-    await requireAdmin();
+    const userId = await getSessionUserId();
 
     const groups = await prisma.susuGroup.findMany({
+      where: {
+        OR: [
+          { treasurerId: userId },
+          { members: { some: { userId } } },
+        ],
+      },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
@@ -35,15 +52,19 @@ export async function GET() {
         currentCycle: true,
         status: true,
         createdAt: true,
+        treasurer: {
+          select: {
+            name: true,
+          },
+        },
         members: {
-          select: { id: true },
+          select: {
+            id: true,
+            userId: true,
+            memberRole: true,
+          },
         },
         cycles: {
-          where: {
-            cycleNumber: {
-              not: undefined,
-            },
-          },
           orderBy: { cycleNumber: "desc" },
           take: 1,
           select: {
@@ -58,26 +79,32 @@ export async function GET() {
     });
 
     return NextResponse.json(
-      groups.map((group) => ({
-        id: group.id,
-        name: group.name,
-        contributionAmount: Number(group.contributionAmount),
-        frequency: group.frequency,
-        currentCycle: group.currentCycle,
-        status: group.status,
-        createdAt: group.createdAt.toISOString(),
-        memberCount: group.members.length,
-        cycle:
-          group.cycles[0] === undefined
-            ? null
-            : {
-                id: group.cycles[0].id,
-                cycleNumber: group.cycles[0].cycleNumber,
-                payoutDate: group.cycles[0].payoutDate.toISOString(),
-                status: group.cycles[0].status,
-                totalCollected: Number(group.cycles[0].totalCollected),
-              },
-      }))
+      groups.map((group) => {
+        const membership = group.members.find((member) => member.userId === userId);
+
+        return {
+          id: group.id,
+          name: group.name,
+          contributionAmount: Number(group.contributionAmount),
+          frequency: group.frequency,
+          currentCycle: group.currentCycle,
+          status: group.status,
+          createdAt: group.createdAt.toISOString(),
+          memberCount: group.members.length,
+          treasurerName: group.treasurer.name,
+          memberRole: membership?.memberRole ?? (group.treasurer ? "TREASURER" : null),
+          cycle:
+            group.cycles[0] === undefined
+              ? null
+              : {
+                  id: group.cycles[0].id,
+                  cycleNumber: group.cycles[0].cycleNumber,
+                  payoutDate: group.cycles[0].payoutDate.toISOString(),
+                  status: group.cycles[0].status,
+                  totalCollected: Number(group.cycles[0].totalCollected),
+                },
+        };
+      })
     );
   } catch (error) {
     return handleRouteError(error);
@@ -86,7 +113,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    await requireAdmin();
+    const userId = await getSessionUserId();
 
     const body = await req.json();
     const parsed = CreateGroupSchema.safeParse(body);
@@ -99,7 +126,17 @@ export async function POST(req: Request) {
     }
 
     const group = await prisma.susuGroup.create({
-      data: parsed.data,
+      data: {
+        ...parsed.data,
+        treasurerId: userId,
+        members: {
+          create: {
+            userId,
+            memberRole: "TREASURER",
+            payoutPosition: null,
+          },
+        },
+      },
       select: {
         id: true,
         name: true,
@@ -109,15 +146,26 @@ export async function POST(req: Request) {
         status: true,
         createdAt: true,
         updatedAt: true,
+        treasurer: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
       },
     });
 
     return NextResponse.json(
       {
-        ...group,
+        id: group.id,
+        name: group.name,
         contributionAmount: Number(group.contributionAmount),
+        frequency: group.frequency,
+        currentCycle: group.currentCycle,
+        status: group.status,
         createdAt: group.createdAt.toISOString(),
         updatedAt: group.updatedAt.toISOString(),
+        treasurer: group.treasurer,
       },
       { status: 201 }
     );

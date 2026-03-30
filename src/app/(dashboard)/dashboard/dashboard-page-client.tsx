@@ -1,7 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -90,10 +93,22 @@ function DashboardSkeleton() {
 }
 
 export function DashboardPageClient() {
+  const pathname = usePathname();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: fetchDashboard,
   });
+
+  useEffect(() => {
+    if (searchParams.get("payment") !== "success") {
+      return;
+    }
+
+    toast.success("Payment received! We'll confirm it shortly.");
+    router.replace(pathname);
+  }, [pathname, router, searchParams]);
 
   if (isLoading) {
     return <DashboardSkeleton />;

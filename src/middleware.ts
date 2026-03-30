@@ -29,6 +29,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",
-    "/api/((?!auth|webhooks|members).+)",
+    "/api/((?!auth|webhooks|members|invite).+)",
   ],
 };

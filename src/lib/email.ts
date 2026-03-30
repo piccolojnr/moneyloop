@@ -124,3 +124,38 @@ export async function sendPayoutNotification({
     }),
   });
 }
+
+export async function sendGroupInvite({
+  to,
+  inviterName,
+  groupName,
+  contributionAmount,
+  frequency,
+  inviteUrl,
+}: {
+  to: string;
+  inviterName: string;
+  groupName: string;
+  contributionAmount: number;
+  frequency: string;
+  inviteUrl: string;
+}) {
+  ensureEmailConfig();
+
+  await resend!.emails.send({
+    from: emailFrom!,
+    to,
+    subject: `${inviterName} invited you to join ${groupName} on MoneyLoop`,
+    html: shellHtml({
+      title: "You have been invited to join a MoneyLoop group",
+      intro: `${inviterName} invited you to join ${groupName} on MoneyLoop.`,
+      body: `
+        <p style="margin: 0 0 12px;">Contribution amount: <strong>GHS ${contributionAmount.toFixed(2)}</strong></p>
+        <p style="margin: 0 0 12px;">Contribution frequency: <strong>${frequency}</strong></p>
+        <p style="margin: 0;">Open the invitation to review the group and accept the invite.</p>
+      `,
+      ctaLabel: "Accept Invitation",
+      ctaUrl: inviteUrl,
+    }),
+  });
+}

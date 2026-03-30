@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -148,14 +149,14 @@ export default function AdminPayoutsPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <button
+            <Button
               type="button"
+              variant="outline"
               onClick={() => refetch()}
               disabled={isRefetching}
-              className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
             >
               {isRefetching ? "Retrying..." : "Try again"}
-            </button>
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -186,9 +187,20 @@ export default function AdminPayoutsPage() {
             </div>
 
             {data.data.length === 0 ? (
-              <p className="text-sm text-muted-foreground">
-                No payouts match this filter yet.
-              </p>
+              <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
+                <p className="text-sm text-muted-foreground">
+                  No payouts match this filter yet.
+                </p>
+                {statusFilter !== "ALL" ? (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStatusFilter("ALL")}
+                  >
+                    Clear filter
+                  </Button>
+                ) : null}
+              </div>
             ) : (
               <Table>
                 <TableHeader>

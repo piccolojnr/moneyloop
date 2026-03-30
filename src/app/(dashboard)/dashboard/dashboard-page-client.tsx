@@ -99,6 +99,7 @@ export function DashboardPageClient() {
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["dashboard-summary"],
     queryFn: fetchDashboard,
+    refetchInterval: 30_000,
   });
 
   useEffect(() => {
@@ -155,6 +156,11 @@ export function DashboardPageClient() {
             Signed in as{" "}
             <span className="font-medium text-foreground">{data.member.name}</span>.
           </p>
+          <div className="pt-1">
+            <Button asChild variant="outline">
+              <Link href="/history">View account history</Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );

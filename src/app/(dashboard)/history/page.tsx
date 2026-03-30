@@ -1,8 +1,10 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -151,9 +153,14 @@ export default function HistoryPage() {
         </CardHeader>
         <CardContent>
           {data.contributions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No contributions yet. Your first cycle is coming up.
-            </p>
+            <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
+              <p className="text-sm text-muted-foreground">
+                No contributions yet. Your first cycle is coming up.
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/dashboard">Back to dashboard</Link>
+              </Button>
+            </div>
           ) : (
             <Table>
               <TableHeader>
@@ -201,9 +208,14 @@ export default function HistoryPage() {
         </CardHeader>
         <CardContent>
           {data.payouts.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No payouts received yet. Your turn in the rotation is still ahead.
-            </p>
+            <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
+              <p className="text-sm text-muted-foreground">
+                No payouts received yet. Your turn in the rotation is still ahead.
+              </p>
+              <Button asChild variant="outline">
+                <Link href="/dashboard">View your dashboard</Link>
+              </Button>
+            </div>
           ) : (
             <div className="grid gap-3 md:grid-cols-2">
               {data.payouts.map((payout) => (

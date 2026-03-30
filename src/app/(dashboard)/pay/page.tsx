@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
+import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -79,8 +80,10 @@ function PayPageSkeleton() {
 
 export default function PayPage() {
   const startedRef = useRef(false);
+  const slowNoticeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [status, setStatus] = useState<"idle" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
+  const [showSlowNotice, setShowSlowNotice] = useState(false);
 
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["dashboard-summary"],
@@ -105,6 +108,9 @@ export default function PayPage() {
     }
 
     startedRef.current = true;
+    slowNoticeTimerRef.current = setTimeout(() => {
+      setShowSlowNotice(true);
+    }, 5000);
 
     void (async () => {
       const response = await fetch("/api/contributions", {
@@ -120,9 +126,17 @@ export default function PayPage() {
         | null;
 
       if (response.ok && body?.authorizationUrl) {
+        if (slowNoticeTimerRef.current) {
+          clearTimeout(slowNoticeTimerRef.current);
+        }
         window.location.href = body.authorizationUrl;
         return;
       }
+
+      if (slowNoticeTimerRef.current) {
+        clearTimeout(slowNoticeTimerRef.current);
+      }
+      setShowSlowNotice(false);
 
       if (response.status === 409) {
         setStatus("idle");
@@ -140,6 +154,10 @@ export default function PayPage() {
       setMessage(body?.error ?? "Unable to start payment right now.");
       startedRef.current = false;
     })().catch((paymentError: unknown) => {
+      if (slowNoticeTimerRef.current) {
+        clearTimeout(slowNoticeTimerRef.current);
+      }
+      setShowSlowNotice(false);
       setStatus("error");
       setMessage(
         paymentError instanceof Error
@@ -148,6 +166,12 @@ export default function PayPage() {
       );
       startedRef.current = false;
     });
+
+    return () => {
+      if (slowNoticeTimerRef.current) {
+        clearTimeout(slowNoticeTimerRef.current);
+      }
+    };
   }, [data, message, shouldAutoStart, status]);
 
   if (isLoading) {
@@ -221,8 +245,17 @@ export default function PayPage() {
 
         {isStarting ? (
           <div className="space-y-3">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-3/4" />
+            <div className="flex items-center gap-3 text-sm text-muted-foreground">
+              <LoadingSpinner />
+              <span>Connecting you to Paystack...</span>
+            </div>
+            {showSlowNotice ? (
+              <p className="text-sm text-amber-700">
+                This is taking longer than usual...
+              </p>
+            ) : (
+              <Skeleton className="h-4 w-3/4" />
+            )}
           </div>
         ) : (
           <div className="flex gap-3">

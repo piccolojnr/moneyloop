@@ -7,6 +7,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { toast } from "sonner";
 
+import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -315,7 +316,14 @@ export default function AdminMembersPage() {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={addMemberMutation.isPending}>
-                    {addMemberMutation.isPending ? "Creating..." : "Create member"}
+                    {addMemberMutation.isPending ? (
+                      <span className="flex items-center gap-2">
+                        <LoadingSpinner />
+                        Creating...
+                      </span>
+                    ) : (
+                      "Create member"
+                    )}
                   </Button>
                 </div>
               </form>
@@ -348,12 +356,17 @@ export default function AdminMembersPage() {
         </Card>
       ) : data.length === 0 ? (
         <Card>
-          <CardHeader>
+          <CardHeader className="items-center text-center">
             <CardTitle>No members yet</CardTitle>
             <CardDescription>
               Add the first member to start building your susu group.
             </CardDescription>
           </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button type="button" onClick={() => setDialogOpen(true)}>
+              Add your first member
+            </Button>
+          </CardContent>
         </Card>
       ) : (
         <Card>

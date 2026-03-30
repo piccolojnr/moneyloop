@@ -8,6 +8,7 @@ import { z } from "zod";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 
+import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -461,7 +462,14 @@ export default function AdminCyclesPage() {
                     Cancel
                   </Button>
                   <Button type="submit" disabled={createGroupMutation.isPending}>
-                    {createGroupMutation.isPending ? "Creating..." : "Create group"}
+                    {createGroupMutation.isPending ? (
+                      <span className="flex items-center gap-2">
+                        <LoadingSpinner />
+                        Creating...
+                      </span>
+                    ) : (
+                      "Create group"
+                    )}
                   </Button>
                 </div>
               </form>
@@ -494,12 +502,17 @@ export default function AdminCyclesPage() {
         </Card>
       ) : groups.length === 0 ? (
         <Card>
-          <CardHeader>
+          <CardHeader className="items-center text-center">
             <CardTitle>No groups yet</CardTitle>
             <CardDescription>
               Create your first group to begin planning cycles and payouts.
             </CardDescription>
           </CardHeader>
+          <CardContent className="flex justify-center">
+            <Button type="button" onClick={() => setCreateDialogOpen(true)}>
+              Create your first group
+            </Button>
+          </CardContent>
         </Card>
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
@@ -615,7 +628,14 @@ export default function AdminCyclesPage() {
                   Cancel
                 </Button>
                 <Button type="submit" disabled={startGroupMutation.isPending}>
-                  {startGroupMutation.isPending ? "Starting..." : "Start group"}
+                  {startGroupMutation.isPending ? (
+                    <span className="flex items-center gap-2">
+                      <LoadingSpinner />
+                      Starting...
+                    </span>
+                  ) : (
+                    "Start group"
+                  )}
                 </Button>
               </div>
             </form>
@@ -638,9 +658,26 @@ export default function AdminCyclesPage() {
             </CardHeader>
             <CardContent>
               {!selectedCycle ? (
-                <p className="text-sm text-muted-foreground">
-                  This group has not started its first cycle yet.
-                </p>
+                <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    This group has not started its first cycle yet.
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => {
+                      const selectedGroup = groups?.find(
+                        (group) => group.id === selectedGroupDetail.id
+                      );
+                      if (!selectedGroup || selectedGroup.cycle) {
+                        return;
+                      }
+                      setStartDialogGroup(selectedGroup);
+                      startForm.reset({ payoutDate: "" });
+                    }}
+                  >
+                    Start this group
+                  </Button>
+                </div>
               ) : (
                 <Table>
                   <TableHeader>

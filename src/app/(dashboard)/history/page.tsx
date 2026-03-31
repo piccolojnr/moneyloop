@@ -2,25 +2,14 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 type HistoryResponse = {
   contributions: Array<{
@@ -38,76 +27,65 @@ type HistoryResponse = {
   }>;
 };
 
-async function fetchHistory() {
-  const response = await fetch("/api/history", {
-    credentials: "include",
-  });
+// ── Fetcher ───────────────────────────────────────────────────────────────────
 
-  if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as
-      | { error?: string }
-      | null;
+async function fetchHistory() {
+  const res = await fetch("/api/history", { credentials: "include" });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
     throw new Error(body?.error ?? "Failed to load history");
   }
-
-  return (await response.json()) as HistoryResponse;
+  return (await res.json()) as HistoryResponse;
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
 function formatCurrency(amount: number) {
-  return `GHS ${amount.toFixed(2)}`;
+  return `GH₵ ${amount.toFixed(2)}`;
 }
 
 function formatDate(value: string | null) {
-  if (!value) {
-    return "Not recorded yet";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
+  if (!value) return "Pending";
+  return new Intl.DateTimeFormat("en-GB", {
     day: "numeric",
+    month: "short",
     year: "numeric",
   }).format(new Date(value));
 }
 
-function statusClassName(status: "PENDING" | "SUCCESS" | "FAILED") {
+function statusConfig(status: "PENDING" | "SUCCESS" | "FAILED") {
   switch (status) {
     case "SUCCESS":
-      return "bg-emerald-100 text-emerald-700 hover:bg-emerald-100";
+      return { label: "Paid", className: "bg-primary/10 text-primary hover:bg-primary/10" };
     case "FAILED":
-      return "bg-red-100 text-red-700 hover:bg-red-100";
+      return { label: "Failed", className: "bg-destructive/10 text-destructive hover:bg-destructive/10" };
     default:
-      return "bg-amber-100 text-amber-700 hover:bg-amber-100";
+      return { label: "Pending", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" };
   }
 }
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function HistorySkeleton() {
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader className="space-y-3">
-          <Skeleton className="h-4 w-36" />
-          <Skeleton className="h-8 w-48" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} className="h-10 w-full" />
-          ))}
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader className="space-y-3">
-          <Skeleton className="h-4 w-28" />
-          <Skeleton className="h-8 w-40" />
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {Array.from({ length: 3 }).map((_, index) => (
-            <Skeleton key={index} className="h-20 w-full" />
-          ))}
-        </CardContent>
-      </Card>
+      <Skeleton className="h-8 w-32" />
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+      <Skeleton className="h-8 w-40" />
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
+      </div>
     </div>
   );
 }
+
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function HistoryPage() {
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
@@ -115,134 +93,169 @@ export default function HistoryPage() {
     queryFn: fetchHistory,
   });
 
-  if (isLoading) {
-    return <HistorySkeleton />;
-  }
+  if (isLoading) return <HistorySkeleton />;
 
   if (error || !data) {
     return (
-      <Card className="border-destructive/20">
-        <CardHeader>
-          <CardDescription>History</CardDescription>
-          <CardTitle>Unable to load activity</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            {(error as Error | undefined)?.message ??
-              "Something went wrong while loading your history."}
-          </p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            disabled={isRefetching}
-            className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
-          >
-            {isRefetching ? "Retrying..." : "Try again"}
-          </button>
-        </CardContent>
+      <Card className="border-destructive/20 p-6">
+        <p className="font-semibold text-destructive">Unable to load history</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {(error as Error | undefined)?.message ?? "Something went wrong."}
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-4"
+          onClick={() => refetch()}
+          disabled={isRefetching}
+        >
+          {isRefetching ? "Retrying…" : "Try again"}
+        </Button>
       </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardDescription>My contributions</CardDescription>
-          <CardTitle>Recent contribution activity</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.contributions.length === 0 ? (
-            <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
-              <p className="text-sm text-muted-foreground">
-                No contributions yet. Your first cycle is coming up.
-              </p>
-              <Button asChild variant="outline">
-                <Link href="/dashboard">Back to dashboard</Link>
-              </Button>
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cycle</TableHead>
-                  <TableHead>Amount</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.contributions.map((contribution) => (
-                  <TableRow
-                    key={`${contribution.groupName}-${contribution.cycleNumber}`}
-                  >
-                    <TableCell>
-                      <div className="flex flex-col">
-                        <span className="font-medium">
-                          Cycle #{contribution.cycleNumber}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {contribution.groupName}
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatCurrency(contribution.amount)}</TableCell>
-                    <TableCell>{formatDate(contribution.paidAt)}</TableCell>
-                    <TableCell>
-                      <Badge className={statusClassName(contribution.status)}>
-                        {contribution.status}
-                      </Badge>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+    <div className="space-y-8">
+      {/* Page header */}
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">History</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Your contributions and payouts across all cycles.
+        </p>
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardDescription>Payouts received</CardDescription>
-          <CardTitle>Your recent payouts</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {data.payouts.length === 0 ? (
-            <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
-              <p className="text-sm text-muted-foreground">
-                No payouts received yet. Your turn in the rotation is still ahead.
-              </p>
-              <Button asChild variant="outline">
-                <Link href="/dashboard">View your dashboard</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-3 md:grid-cols-2">
-              {data.payouts.map((payout) => (
-                <div
-                  key={`payout-${payout.cycleNumber}-${payout.sentAt ?? payout.status}`}
-                  className="rounded-lg border bg-muted/20 p-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-medium">Cycle #{payout.cycleNumber}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(payout.sentAt)}
-                      </p>
+      {/* Contributions */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted">
+            <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+          <h2 className="text-base font-semibold">Contributions</h2>
+        </div>
+
+        {data.contributions.length === 0 ? (
+          <div className="flex min-h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed text-center">
+            <p className="text-sm text-muted-foreground">No contributions yet.</p>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard">Back to dashboard</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-2xl border bg-card">
+            {/* Mobile: card rows */}
+            <div className="divide-y sm:hidden">
+              {data.contributions.map((c, i) => {
+                const cfg = statusConfig(c.status);
+                return (
+                  <div key={`${c.groupName}-${c.cycleNumber}-${i}`} className="flex items-center gap-3 px-4 py-3.5">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted">
+                      <ArrowUpRight className="h-4 w-4 text-muted-foreground" />
                     </div>
-                    <Badge className={statusClassName(payout.status)}>
-                      {payout.status}
-                    </Badge>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        Cycle #{c.cycleNumber} · {c.groupName}
+                      </p>
+                      <p className="text-xs text-muted-foreground">{formatDate(c.paidAt)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-semibold">{formatCurrency(c.amount)}</p>
+                      <Badge className={`mt-0.5 text-[10px] ${cfg.className}`}>{cfg.label}</Badge>
+                    </div>
                   </div>
-                  <p className="mt-3 text-lg font-medium">
-                    {formatCurrency(payout.amount)}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Desktop: table */}
+            <table className="hidden w-full text-sm sm:table">
+              <thead>
+                <tr className="border-b bg-muted/40">
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                    Cycle
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                    Group
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                    Amount
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                    Date
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-muted-foreground">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {data.contributions.map((c, i) => {
+                  const cfg = statusConfig(c.status);
+                  return (
+                    <tr key={`${c.groupName}-${c.cycleNumber}-${i}`} className="hover:bg-muted/30">
+                      <td className="px-4 py-3 font-medium">#{c.cycleNumber}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{c.groupName}</td>
+                      <td className="px-4 py-3 font-medium">{formatCurrency(c.amount)}</td>
+                      <td className="px-4 py-3 text-muted-foreground">{formatDate(c.paidAt)}</td>
+                      <td className="px-4 py-3">
+                        <Badge className={cfg.className}>{cfg.label}</Badge>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      {/* Payouts */}
+      <section className="space-y-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10">
+            <ArrowDownLeft className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <h2 className="text-base font-semibold">Payouts received</h2>
+        </div>
+
+        {data.payouts.length === 0 ? (
+          <div className="flex min-h-36 flex-col items-center justify-center gap-3 rounded-2xl border border-dashed text-center">
+            <p className="text-sm text-muted-foreground">
+              No payouts received yet. Your turn is still ahead.
+            </p>
+            <Button asChild variant="outline" size="sm">
+              <Link href="/dashboard">View dashboard</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-3 sm:grid-cols-2">
+            {data.payouts.map((payout, i) => {
+              const cfg = statusConfig(payout.status);
+              return (
+                <div
+                  key={`payout-${payout.cycleNumber}-${i}`}
+                  className="flex items-center gap-4 rounded-2xl border bg-card p-4"
+                >
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                    <ArrowDownLeft className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold">Cycle #{payout.cycleNumber}</p>
+                    <p className="text-xs text-muted-foreground">{formatDate(payout.sentAt)}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-base font-bold text-primary">
+                      {formatCurrency(payout.amount)}
+                    </p>
+                    <Badge className={`mt-0.5 text-[10px] ${cfg.className}`}>{cfg.label}</Badge>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

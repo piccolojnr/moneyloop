@@ -6,27 +6,18 @@ import { prisma } from "@/lib/prisma";
 import { getEligibleContributorIds, getPositionedMembers } from "@/lib/susu";
 
 function addIntervals(baseDate: Date, count: number, frequency: string) {
-  const nextDate = new Date(baseDate);
-
+  const d = new Date(baseDate);
   switch (frequency) {
-    case "DAILY":
-      nextDate.setDate(nextDate.getDate() + count);
-      break;
-    case "WEEKLY":
-      nextDate.setDate(nextDate.getDate() + count * 7);
-      break;
-    case "MONTHLY":
-      nextDate.setMonth(nextDate.getMonth() + count);
-      break;
+    case "DAILY":   d.setDate(d.getDate() + count); break;
+    case "WEEKLY":  d.setDate(d.getDate() + count * 7); break;
+    case "MONTHLY": d.setMonth(d.getMonth() + count); break;
   }
-
-  return nextDate;
+  return d;
 }
 
 export async function GET() {
   const session = await getServerSession(authOptions);
-  const user = session?.user as { id?: string } | undefined;
-  const userId = user?.id;
+  const userId = (session?.user as { id?: string } | undefined)?.id;
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -34,29 +25,21 @@ export async function GET() {
 
   const currentUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: {
-      id: true,
-      name: true,
-    },
+    select: { id: true, name: true },
   });
 
   if (!currentUser) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const membership = await prisma.groupMember.findFirst({
+  // Fetch ALL active group memberships, not just the most recent one.
+  const memberships = await prisma.groupMember.findMany({
     where: {
       userId,
       group: { status: "ACTIVE" },
     },
-    orderBy: { joinedAt: "desc" },
+    orderBy: { joinedAt: "asc" },
     include: {
-      user: {
-        select: {
-          id: true,
-          name: true,
-        },
-      },
       group: {
         select: {
           id: true,
@@ -69,18 +52,11 @@ export async function GET() {
             select: {
               payoutPosition: true,
               userId: true,
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                },
-              },
+              user: { select: { id: true, name: true } },
             },
           },
           cycles: {
-            where: {
-              status: { in: ["PENDING", "READY"] },
-            },
+            where: { status: { in: ["PENDING", "READY"] } },
             orderBy: { cycleNumber: "asc" },
             take: 1,
             select: {
@@ -91,10 +67,7 @@ export async function GET() {
               totalCollected: true,
               recipientId: true,
               contributions: {
-                select: {
-                  userId: true,
-                  status: true,
-                },
+                select: { userId: true, status: true },
               },
             },
           },
@@ -103,103 +76,86 @@ export async function GET() {
     },
   });
 
-  if (!membership) {
-    return NextResponse.json({
-      member: currentUser,
-      group: null,
-      activeCycle: null,
-      myContribution: {
-        status: null,
-      },
-      myPayout: null,
-      totalCyclesRemaining: 0,
-    });
+  if (memberships.length === 0) {
+    return NextResponse.json({ member: currentUser, groups: [] });
   }
 
-  const activeCycle = membership.group.cycles[0];
+  const groups = memberships.map((membership) => {
+    const activeCycle = membership.group.cycles[0] ?? null;
 
-  if (!activeCycle) {
-    return NextResponse.json({
-      member: currentUser,
+    if (!activeCycle) {
+      return {
+        group: {
+          groupId: membership.group.id,
+          groupName: membership.group.name,
+          payoutPosition: membership.payoutPosition,
+          memberCount: membership.group.members.length,
+          contributionAmount: Number(membership.group.contributionAmount),
+        },
+        activeCycle: null,
+        myContribution: { status: null },
+        myPayout: null,
+        totalCyclesRemaining: 0,
+      };
+    }
+
+    const positionedMembers = getPositionedMembers(membership.group.members);
+    const memberCount = positionedMembers.length;
+    const recipient = membership.group.members.find((m) => m.userId === activeCycle.recipientId);
+    const eligibleContributorIds = getEligibleContributorIds(
+      membership.group.members,
+      activeCycle.recipientId
+    );
+    const isCurrentRecipient = activeCycle.recipientId === userId;
+    const myContribution = activeCycle.contributions.find((c) => c.userId === userId);
+    const paidCount = activeCycle.contributions.filter(
+      (c) => c.status === "SUCCESS" && eligibleContributorIds.includes(c.userId)
+    ).length;
+
+    const cyclesUntilPayoutTurn = Math.max(
+      (membership.payoutPosition ?? 0) - activeCycle.cycleNumber,
+      0
+    );
+    const expectedPayoutDate = addIntervals(
+      activeCycle.payoutDate,
+      cyclesUntilPayoutTurn,
+      membership.group.frequency
+    );
+    const daysUntilMyPayout = Math.max(
+      Math.ceil((expectedPayoutDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+      0
+    );
+
+    return {
       group: {
         groupId: membership.group.id,
         groupName: membership.group.name,
         payoutPosition: membership.payoutPosition,
-        memberCount: membership.group.members.length,
+        memberCount,
         contributionAmount: Number(membership.group.contributionAmount),
       },
-      activeCycle: null,
-      myContribution: {
-        status: null,
+      activeCycle: {
+        cycleId: activeCycle.id,
+        cycleNumber: activeCycle.cycleNumber,
+        payoutDate: activeCycle.payoutDate.toISOString(),
+        status: activeCycle.status,
+        totalCollected: Number(activeCycle.totalCollected),
+        recipientName: recipient?.user.name ?? "Unknown",
+        recipientId: activeCycle.recipientId,
+        requiredContributorCount: eligibleContributorIds.length,
+        paidCount,
       },
-      myPayout: null,
-      totalCyclesRemaining: 0,
-    });
-  }
-
-  const positionedMembers = getPositionedMembers(membership.group.members);
-  const memberCount = positionedMembers.length;
-  const recipient = membership.group.members.find(
-    (member) => member.userId === activeCycle.recipientId
-  );
-  const eligibleContributorIds = getEligibleContributorIds(
-    membership.group.members,
-    activeCycle.recipientId
-  );
-  const isCurrentRecipient = activeCycle.recipientId === userId;
-  const myContribution = activeCycle.contributions.find(
-    (contribution) => contribution.userId === userId
-  );
-  const paidCount = activeCycle.contributions.filter(
-    (contribution) =>
-      contribution.status === "SUCCESS" &&
-      eligibleContributorIds.includes(contribution.userId)
-  ).length;
-
-  const cyclesUntilPayoutTurn = Math.max(
-    membership.payoutPosition - activeCycle.cycleNumber,
-    0
-  );
-  const expectedPayoutDate = addIntervals(
-    activeCycle.payoutDate,
-    cyclesUntilPayoutTurn,
-    membership.group.frequency
-  );
-  const daysUntilMyPayout = Math.max(
-    Math.ceil(
-      (expectedPayoutDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
-    ),
-    0
-  );
-
-  return NextResponse.json({
-    member: currentUser,
-    group: {
-      groupId: membership.group.id,
-      groupName: membership.group.name,
-      payoutPosition: membership.payoutPosition,
-      memberCount,
-      contributionAmount: Number(membership.group.contributionAmount),
-    },
-    activeCycle: {
-      cycleId: activeCycle.id,
-      cycleNumber: activeCycle.cycleNumber,
-      payoutDate: activeCycle.payoutDate.toISOString(),
-      status: activeCycle.status,
-      totalCollected: Number(activeCycle.totalCollected),
-      recipientName: recipient?.user.name ?? "Unknown recipient",
-      recipientId: activeCycle.recipientId,
-      requiredContributorCount: eligibleContributorIds.length,
-      paidCount,
-    },
-    myContribution: {
-      status: isCurrentRecipient ? "EXEMPT" : myContribution?.status ?? null,
-    },
-    myPayout: {
-      daysUntilTurn: daysUntilMyPayout,
-      cyclesUntilTurn: cyclesUntilPayoutTurn,
-      expectedPayoutDate: expectedPayoutDate.toISOString(),
-    },
-    totalCyclesRemaining: Math.max(memberCount - activeCycle.cycleNumber, 0),
+      myContribution: {
+        status: isCurrentRecipient ? "EXEMPT" : (myContribution?.status ?? null),
+      },
+      myPayout: {
+        daysUntilTurn: daysUntilMyPayout,
+        cyclesUntilTurn: cyclesUntilPayoutTurn,
+        expectedPayoutDate: expectedPayoutDate.toISOString(),
+      },
+      totalCyclesRemaining: Math.max(memberCount - activeCycle.cycleNumber, 0),
+    };
   });
+
+  return NextResponse.json({ member: currentUser, groups });
 }

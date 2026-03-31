@@ -294,7 +294,7 @@ export function GroupSetupPage() {
     }
 
     if (hasCycles || !isTreasurer) {
-      router.replace(`/dashboard/groups/${groupId}`);
+      router.replace(`/groups/${groupId}`);
     }
   }, [data, groupId, hasCycles, isTreasurer, router, sessionStatus]);
 
@@ -307,7 +307,7 @@ export function GroupSetupPage() {
         queryClient.invalidateQueries({ queryKey: ["group", groupId] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard-summary"] }),
       ]);
-      router.push(`/dashboard/groups/${groupId}`);
+      router.push(`/groups/${groupId}`);
     },
     onError: (mutationError: Error) => {
       toast.error(mutationError.message || "Unable to start the first cycle.");
@@ -386,7 +386,7 @@ export function GroupSetupPage() {
         </CardHeader>
         <CardContent>
           <Button asChild>
-            <Link href={`/dashboard/groups/${groupId}`}>Back to group</Link>
+            <Link href={`/groups/${groupId}`}>Back to group</Link>
           </Button>
         </CardContent>
       </Card>

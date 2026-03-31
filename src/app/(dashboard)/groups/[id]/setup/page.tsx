@@ -108,12 +108,14 @@ async function saveOrderAndStartCycle({
     body: JSON.stringify({ positions }),
   });
 
-  const positionsBody = (await positionsResponse.json().catch(() => null)) as
-    | { error?: string }
-    | null;
+  const positionsBody = (await positionsResponse.json().catch(() => null)) as {
+    error?: string;
+  } | null;
 
   if (!positionsResponse.ok) {
-    throw new Error(getErrorMessage(positionsBody, "Failed to save payout order"));
+    throw new Error(
+      getErrorMessage(positionsBody, "Failed to save payout order"),
+    );
   }
 
   const startResponse = await fetch(`/api/groups/${groupId}/start`, {
@@ -124,9 +126,9 @@ async function saveOrderAndStartCycle({
     body: JSON.stringify({ payoutDate }),
   });
 
-  const startBody = (await startResponse.json().catch(() => null)) as
-    | { error?: string }
-    | null;
+  const startBody = (await startResponse.json().catch(() => null)) as {
+    error?: string;
+  } | null;
 
   if (!startResponse.ok) {
     throw new Error(getErrorMessage(startBody, "Failed to start cycle"));
@@ -162,7 +164,11 @@ function shuffleMembers(members: OrderedMember[]) {
   return next;
 }
 
-function addFrequency(date: Date, frequency: GroupSetupDetail["frequency"], step: number) {
+function addFrequency(
+  date: Date,
+  frequency: GroupSetupDetail["frequency"],
+  step: number,
+) {
   const next = new Date(date);
 
   if (frequency === "DAILY") {
@@ -267,7 +273,9 @@ export function GroupSetupPage() {
   const { data: session, status: sessionStatus } = useSession();
   const [step, setStep] = useState<1 | 2>(1);
   const [mode, setMode] = useState<"random" | "manual" | null>(null);
-  const [orderedMembers, setOrderedMembers] = useState<OrderedMember[] | null>(null);
+  const [orderedMembers, setOrderedMembers] = useState<OrderedMember[] | null>(
+    null,
+  );
   const [payoutDate, setPayoutDate] = useState("");
 
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
@@ -285,7 +293,7 @@ export function GroupSetupPage() {
   const hasCycles = (data?.cycles.length ?? 0) > 0;
   const resolvedOrderedMembers = useMemo(
     () => orderedMembers ?? (data ? sortMembers(data.members) : []),
-    [data, orderedMembers]
+    [data, orderedMembers],
   );
 
   useEffect(() => {
@@ -318,7 +326,7 @@ export function GroupSetupPage() {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const expectedDates = useMemo(() => {
@@ -329,7 +337,7 @@ export function GroupSetupPage() {
     const startDate = new Date(`${payoutDate}T00:00:00`);
 
     return resolvedOrderedMembers.map((_, index) =>
-      addFrequency(startDate, data?.frequency ?? "MONTHLY", index)
+      addFrequency(startDate, data?.frequency ?? "MONTHLY", index),
     );
   }, [data?.frequency, payoutDate, resolvedOrderedMembers]);
 
@@ -375,7 +383,7 @@ export function GroupSetupPage() {
     );
   }
 
-  if (data.members.length < 2) {
+  if (!data || data.members.length < 2) {
     return (
       <Card className="max-w-2xl border-amber-200 bg-amber-50/60">
         <CardHeader>
@@ -396,19 +404,28 @@ export function GroupSetupPage() {
   const canContinue = mode !== null && resolvedOrderedMembers.length > 0;
 
   function handleRandomize() {
+    if (!data) {
+      return;
+    }
     const shuffled = shuffleMembers(sortMembers(data.members));
     setMode("random");
     setOrderedMembers(shuffled);
   }
 
   function handleManualMode() {
+    if (!data) {
+      return;
+    }
     setMode("manual");
     setOrderedMembers((current) =>
-      current && current.length > 0 ? current : sortMembers(data.members)
+      current && current.length > 0 ? current : sortMembers(data.members),
     );
   }
 
   function handleDragEnd(event: DragEndEvent) {
+    if (!data) {
+      return;
+    }
     const { active, over } = event;
 
     if (!over || active.id === over.id) {
@@ -417,7 +434,9 @@ export function GroupSetupPage() {
 
     setOrderedMembers((current) => {
       const members = current ?? sortMembers(data.members);
-      const oldIndex = members.findIndex((member) => member.userId === active.id);
+      const oldIndex = members.findIndex(
+        (member) => member.userId === active.id,
+      );
       const newIndex = members.findIndex((member) => member.userId === over.id);
 
       if (oldIndex === -1 || newIndex === -1) {
@@ -478,11 +497,16 @@ export function GroupSetupPage() {
               <CardHeader>
                 <CardTitle>Manual</CardTitle>
                 <CardDescription>
-                  Drag members into the payout order you want to use for this group.
+                  Drag members into the payout order you want to use for this
+                  group.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button type="button" variant="outline" onClick={handleManualMode}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleManualMode}
+                >
                   Arrange manually
                 </Button>
               </CardContent>
@@ -504,7 +528,9 @@ export function GroupSetupPage() {
                   onDragEnd={handleDragEnd}
                 >
                   <SortableContext
-                    items={resolvedOrderedMembers.map((member) => member.userId)}
+                    items={resolvedOrderedMembers.map(
+                      (member) => member.userId,
+                    )}
                     strategy={verticalListSortingStrategy}
                   >
                     <div className="space-y-3">
@@ -534,7 +560,8 @@ export function GroupSetupPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Choose randomize or manual ordering to generate the payout list.
+                  Choose randomize or manual ordering to generate the payout
+                  list.
                 </p>
               )}
 
@@ -555,7 +582,8 @@ export function GroupSetupPage() {
           <CardHeader>
             <CardTitle>Confirm payout order</CardTitle>
             <CardDescription>
-              Review the order below and choose the first payout date for {data.name}.
+              Review the order below and choose the first payout date for{" "}
+              {data.name}.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -574,7 +602,9 @@ export function GroupSetupPage() {
                     <p className="font-medium">{member.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-muted-foreground">Expected payout date</p>
+                    <p className="text-sm text-muted-foreground">
+                      Expected payout date
+                    </p>
                     <p className="font-medium">
                       {expectedDates[index]
                         ? formatDate(expectedDates[index] as Date)
@@ -586,7 +616,10 @@ export function GroupSetupPage() {
             </div>
 
             <div className="max-w-sm space-y-2">
-              <label htmlFor="first-payout-date" className="text-sm font-medium">
+              <label
+                htmlFor="first-payout-date"
+                className="text-sm font-medium"
+              >
                 First payout date
               </label>
               <Input
@@ -598,7 +631,11 @@ export function GroupSetupPage() {
             </div>
 
             <div className="flex flex-wrap justify-between gap-3">
-              <Button type="button" variant="outline" onClick={() => setStep(1)}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setStep(1)}
+              >
                 Back
               </Button>
               <Button

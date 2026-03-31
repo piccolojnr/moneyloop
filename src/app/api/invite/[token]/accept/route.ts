@@ -81,20 +81,28 @@ export async function POST(
       );
     }
 
-    await prisma.$transaction([
-      prisma.groupMember.create({
-        data: {
-          groupId: invitation.group.id,
-          userId: user.id,
-          memberRole: "MEMBER",
-          payoutPosition: null,
-        },
-      }),
-      prisma.invitation.update({
-        where: { id: invitation.id },
-        data: { usedAt: new Date() },
-      }),
-    ]);
+    const memberCreate = prisma.groupMember.create({
+      data: {
+        groupId: invitation.group.id,
+        userId: user.id,
+        memberRole: "MEMBER",
+        payoutPosition: null,
+      },
+    });
+
+    if (invitation.email) {
+      // Email-targeted invites are single-use
+      await prisma.$transaction([
+        memberCreate,
+        prisma.invitation.update({
+          where: { id: invitation.id },
+          data: { usedAt: new Date() },
+        }),
+      ]);
+    } else {
+      // Open invites stay valid for future users
+      await memberCreate;
+    }
 
     return NextResponse.json({ groupId: invitation.group.id });
   } catch (error) {

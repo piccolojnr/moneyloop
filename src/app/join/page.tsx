@@ -1,21 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { AlertTriangle, Info, Users } from "lucide-react";
 
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type InvitePreview =
@@ -26,6 +19,8 @@ type InvitePreview =
       contributionAmount: number;
       frequency: string;
       memberCount: number;
+      requiresEmail: boolean;
+      targetEmailMasked: string | null;
     }
   | {
       valid: false;
@@ -37,7 +32,6 @@ async function fetchInvite(token: string) {
   if (!response.ok) {
     throw new Error("Failed to validate invitation");
   }
-
   return (await response.json()) as InvitePreview;
 }
 
@@ -52,25 +46,60 @@ async function acceptInvite(token: string) {
     | null;
 
   if (!response.ok) {
-    throw new Error(body?.error ?? "Failed to accept invitation");
+    const err = new Error(body?.error ?? "Failed to accept invitation");
+    (err as Error & { status: number }).status = response.status;
+    throw err;
   }
 
   return body as { groupId: string };
 }
 
-function InviteSkeleton() {
+function PageSkeleton() {
   return (
-    <Card className="w-full max-w-xl">
-      <CardHeader className="space-y-3">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-8 w-64" />
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <Skeleton className="h-4 w-full" />
-        <Skeleton className="h-4 w-5/6" />
-        <Skeleton className="h-10 w-40" />
-      </CardContent>
-    </Card>
+    <div className="w-full max-w-lg space-y-4">
+      <Skeleton className="h-6 w-40 mx-auto" />
+      <div className="rounded-2xl border bg-card p-6 shadow-lg space-y-4">
+        <Skeleton className="h-5 w-24" />
+        <Skeleton className="h-8 w-56" />
+        <div className="space-y-3 pt-2">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-5/6" />
+          <Skeleton className="h-4 w-4/6" />
+          <Skeleton className="h-4 w-3/4" />
+        </div>
+        <Skeleton className="h-10 w-32 mt-2" />
+      </div>
+    </div>
+  );
+}
+
+function ErrorCard({
+  title,
+  message,
+}: {
+  title: string;
+  message: string;
+}) {
+  return (
+    <div className="w-full max-w-lg rounded-2xl border border-destructive/20 bg-card p-8 shadow-lg text-center space-y-3">
+      <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+        Invitation unavailable
+      </p>
+      <h1 className="text-xl font-bold">{title}</h1>
+      <p className="text-sm text-muted-foreground">{message}</p>
+      <Button asChild variant="outline" className="mt-2">
+        <Link href="/register">Create account</Link>
+      </Button>
+    </div>
+  );
+}
+
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between gap-4 py-2.5 border-b border-border/60 last:border-0">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold">{value}</span>
+    </div>
   );
 }
 
@@ -78,7 +107,8 @@ export default function JoinPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
-  const { status: sessionStatus } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
+  const [acceptError, setAcceptError] = useState<string | null>(null);
 
   const callbackUrl = useMemo(
     () => (token ? `/join?token=${encodeURIComponent(token)}` : "/join"),
@@ -93,150 +123,246 @@ export default function JoinPage() {
 
   const acceptMutation = useMutation({
     mutationFn: () => acceptInvite(token!),
-    onSuccess: () => {
-      toast.success("Invitation accepted. Welcome to the group.");
-      router.push("/dashboard");
+    onSuccess: ({ groupId }) => {
+      router.push(`/groups/${groupId}`);
     },
     onError: (error: Error) => {
-      toast.error(error.message);
+      setAcceptError(error.message);
     },
   });
 
-  const content = (() => {
-    if (!token) {
-      return (
-        <Card className="w-full max-w-xl">
-          <CardHeader className="text-center">
-            <CardDescription>Invitation required</CardDescription>
-            <CardTitle>No invitation token found</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Open a valid MoneyLoop invitation link to preview and join a group.
+  const currentUserEmail =
+    session?.user && "email" in session.user
+      ? (session.user.email as string | undefined)
+      : undefined;
+  const currentUserName =
+    session?.user && "name" in session.user
+      ? (session.user.name as string | undefined)
+      : undefined;
+
+  let content: React.ReactNode;
+
+  if (!token) {
+    content = (
+      <ErrorCard
+        title="No invitation token found"
+        message="Open a valid MoneyLoop invitation link to preview and join a group."
+      />
+    );
+  } else if (inviteQuery.isLoading) {
+    content = <PageSkeleton />;
+  } else if (inviteQuery.error || !inviteQuery.data) {
+    content = (
+      <ErrorCard
+        title="Couldn't load this invitation"
+        message="Try opening the link again or ask the group treasurer for a fresh invite."
+      />
+    );
+  } else if (!inviteQuery.data.valid) {
+    const { reason } = inviteQuery.data;
+    const title =
+      reason === "expired"
+        ? "This invitation has expired"
+        : reason === "already_used"
+          ? "This invitation has already been used"
+          : "Invitation not found";
+    const message =
+      reason === "expired"
+        ? "Ask the group treasurer to send you a fresh invite."
+        : reason === "already_used"
+          ? "This invite link has already been accepted. Ask the treasurer for a new one."
+          : "This invite link was not found. Check the link and try again.";
+    content = <ErrorCard title={title} message={message} />;
+  } else {
+    const invite = inviteQuery.data;
+
+    if (sessionStatus === "loading") {
+      content = <PageSkeleton />;
+    } else if (sessionStatus === "unauthenticated") {
+      content = (
+        <div className="w-full max-w-lg rounded-2xl border bg-card p-8 shadow-lg space-y-6">
+          <div className="space-y-1">
+            <p className="text-xs font-medium uppercase tracking-widest text-primary">
+              Group invitation
             </p>
-            <Button asChild variant="outline">
-              <Link href="/register">Create account</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    if (inviteQuery.isLoading) {
-      return <InviteSkeleton />;
-    }
-
-    if (inviteQuery.error || !inviteQuery.data) {
-      return (
-        <Card className="w-full max-w-xl border-destructive/20">
-          <CardHeader className="text-center">
-            <CardDescription>Invitation error</CardDescription>
-            <CardTitle>We couldn&apos;t load this invitation</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              Try opening the link again or ask the group treasurer for a fresh invite.
-            </p>
-            <Button asChild variant="outline">
-              <Link href="/register">Create account</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    if (!inviteQuery.data.valid) {
-      const reasonMessage =
-        inviteQuery.data.reason === "expired"
-          ? "This invitation has expired."
-          : inviteQuery.data.reason === "already_used"
-            ? "This invitation has already been used."
-            : "This invitation link was not found.";
-
-      return (
-        <Card className="w-full max-w-xl">
-          <CardHeader className="text-center">
-            <CardDescription>Invitation unavailable</CardDescription>
-            <CardTitle>{reasonMessage}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-center">
-            <p className="text-sm text-muted-foreground">
-              You can register for MoneyLoop and request a new invite from the group treasurer.
-            </p>
-            <Button asChild variant="outline">
-              <Link href="/register">Go to registration</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      );
-    }
-
-    const handleJoin = () => {
-      if (sessionStatus !== "authenticated") {
-        router.push(`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`);
-        return;
-      }
-
-      acceptMutation.mutate();
-    };
-
-    return (
-      <Card className="w-full max-w-xl">
-        <CardHeader>
-          <CardDescription>Group invitation</CardDescription>
-          <CardTitle>Join {inviteQuery.data.groupName}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="grid gap-3 text-sm text-muted-foreground">
-            <div className="flex items-center justify-between gap-4">
-              <span>Treasurer</span>
-              <span className="font-medium text-foreground">
-                {inviteQuery.data.treasurerName}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span>Contribution amount</span>
-              <span className="font-medium text-foreground">
-                GHS {inviteQuery.data.contributionAmount.toFixed(2)}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span>Frequency</span>
-              <span className="font-medium text-foreground">
-                {inviteQuery.data.frequency}
-              </span>
-            </div>
-            <div className="flex items-center justify-between gap-4">
-              <span>Current member count</span>
-              <span className="font-medium text-foreground">
-                {inviteQuery.data.memberCount}
-              </span>
-            </div>
+            <h1 className="text-2xl font-bold">Join {invite.groupName}</h1>
           </div>
 
+          <div className="rounded-xl bg-muted/50 px-4 py-1 divide-y divide-border/60">
+            <StatRow label="Treasurer" value={invite.treasurerName} />
+            <StatRow
+              label="Contribution"
+              value={`GH₵ ${invite.contributionAmount.toFixed(2)}`}
+            />
+            <StatRow
+              label="Frequency"
+              value={
+                invite.frequency.charAt(0) +
+                invite.frequency.slice(1).toLowerCase()
+              }
+            />
+            <StatRow
+              label="Members"
+              value={String(invite.memberCount)}
+            />
+          </div>
+
+          {invite.requiresEmail && invite.targetEmailMasked && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+              <Info className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                This invite is for{" "}
+                <strong>{invite.targetEmailMasked}</strong>. Sign in with
+                that account to accept.
+              </span>
+            </div>
+          )}
+
+          {!invite.requiresEmail && (
+            <p className="text-sm text-muted-foreground">
+              Sign in or create an account to join this group.
+            </p>
+          )}
+
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button onClick={handleJoin} disabled={acceptMutation.isPending}>
+            <Button asChild className="flex-1">
+              <Link href={`/login?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
+                Sign in
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="flex-1">
+              <Link href={`/register?callbackUrl=${encodeURIComponent(callbackUrl)}`}>
+                Create account
+              </Link>
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      // authenticated
+      content = (
+        <div className="w-full max-w-lg rounded-2xl border bg-card p-8 shadow-lg space-y-6">
+          <div className="space-y-1">
+            <p className="text-xs font-medium uppercase tracking-widest text-primary">
+              Group invitation
+            </p>
+            <h1 className="text-2xl font-bold">Join {invite.groupName}</h1>
+          </div>
+
+          <div className="rounded-xl bg-muted/50 px-4 py-1 divide-y divide-border/60">
+            <StatRow label="Treasurer" value={invite.treasurerName} />
+            <StatRow
+              label="Contribution"
+              value={`GH₵ ${invite.contributionAmount.toFixed(2)}`}
+            />
+            <StatRow
+              label="Frequency"
+              value={
+                invite.frequency.charAt(0) +
+                invite.frequency.slice(1).toLowerCase()
+              }
+            />
+            <StatRow
+              label="Members"
+              value={String(invite.memberCount)}
+            />
+          </div>
+
+          {/* Joining-as info */}
+          <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+            <Users className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              Joining as{" "}
+              <strong>{currentUserName ?? "you"}</strong>
+              {currentUserEmail ? ` (${currentUserEmail})` : ""}
+            </span>
+          </div>
+
+          {/* Warning for email-targeted invites */}
+          {invite.requiresEmail && invite.targetEmailMasked && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-900/40 dark:bg-amber-950/30 dark:text-amber-300">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>
+                This invite is for{" "}
+                <strong>{invite.targetEmailMasked}</strong>. Make sure
+                you&apos;re signed in with the right account.
+              </span>
+            </div>
+          )}
+
+          {/* Inline accept error */}
+          {acceptError && (
+            <div className="flex items-start gap-2.5 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{acceptError}</span>
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              className="flex-1"
+              onClick={() => {
+                setAcceptError(null);
+                acceptMutation.mutate();
+              }}
+              disabled={acceptMutation.isPending}
+            >
               {acceptMutation.isPending ? (
                 <span className="flex items-center gap-2">
                   <LoadingSpinner />
-                  Joining...
+                  Joining…
                 </span>
               ) : (
-                `Join ${inviteQuery.data.groupName}`
+                `Join ${invite.groupName}`
               )}
             </Button>
-            <Button asChild variant="outline">
-              <Link href="/register">Create account</Link>
+            <Button
+              variant="ghost"
+              className="flex-1 text-muted-foreground"
+              onClick={() =>
+                signOut({
+                  callbackUrl: `/join?token=${encodeURIComponent(token!)}`,
+                })
+              }
+            >
+              Not you? Sign out
             </Button>
           </div>
-        </CardContent>
-      </Card>
-    );
-  })();
+        </div>
+      );
+    }
+  }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted/20 px-6 py-12">
-      {content}
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
+      {/* Dot-grid background */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, oklch(0.42 0.14 160) 1px, transparent 1px)",
+          backgroundSize: "28px 28px",
+        }}
+      />
+      {/* Glow */}
+      <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[600px] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+
+      <div className="relative z-10 w-full max-w-lg space-y-6">
+        {/* Logo */}
+        <div className="text-center">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-2xl font-bold tracking-tight"
+          >
+            <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground text-sm font-bold">
+              M
+            </span>
+            Money<span className="text-primary">Loop</span>
+          </Link>
+        </div>
+
+        {content}
+      </div>
     </div>
   );
 }

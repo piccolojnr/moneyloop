@@ -327,7 +327,7 @@ export function GroupDetailPage() {
                               />
                             </FormControl>
                             <p className="text-xs text-muted-foreground">
-                              Leave blank to generate an open link.
+                              Leave blank to generate a shareable open link.
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -335,14 +335,22 @@ export function GroupDetailPage() {
                       />
 
                       {inviteSentTo && (
-                        <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-                          Invite sent to {inviteSentTo}.
+                        <div className="space-y-1.5 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+                          <p>Invite sent to {inviteSentTo}.</p>
+                          <p className="text-xs text-primary/70">
+                            This invite can only be accepted by this email address.
+                          </p>
                         </div>
                       )}
 
                       {generatedInviteUrl && (
                         <div className="space-y-2 rounded-xl border bg-muted/40 p-3">
-                          <p className="text-xs font-medium">Open invite link</p>
+                          <div>
+                            <p className="text-xs font-medium">Open invite link</p>
+                            <p className="text-xs text-muted-foreground">
+                              Anyone with this link can join your group. Expires in 7 days.
+                            </p>
+                          </div>
                           <div className="flex flex-col gap-2 sm:flex-row">
                             <Input value={generatedInviteUrl} readOnly className="text-xs" />
                             <Button

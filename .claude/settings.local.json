@@ -7,7 +7,10 @@
       "Bash(wc:*)",
       "Bash(npx prisma:*)",
       "Bash(npx tsc:*)",
-      "Bash(pnpx:*)"
+      "Bash(pnpx:*)",
+      "Bash(xargs grep:*)",
+      "Bash(grep:*)",
+      "Bash(find /c/Users/USER/projects/moneyloop/src/app/api/admin/ -type f -name *)"
     ]
   }
 }

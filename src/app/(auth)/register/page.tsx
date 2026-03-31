@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -45,6 +45,7 @@ type RegisterValues = z.infer<typeof registerSchema>;
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<RegisterValues>({
@@ -98,7 +99,8 @@ export default function RegisterPage() {
       return;
     }
 
-    router.push("/dashboard");
+    const callbackUrl = searchParams.get("callbackUrl");
+    router.push(callbackUrl ?? "/dashboard");
   }
 
   return (

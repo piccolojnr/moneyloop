@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 
+function maskEmail(email: string): string {
+  const atIndex = email.indexOf("@");
+  if (atIndex <= 0) return email;
+  return `${email.charAt(0)}***${email.slice(atIndex)}`;
+}
+
 export async function GET(
   _req: Request,
   context: { params: Promise<{ token: string }> }
@@ -35,7 +41,8 @@ export async function GET(
     return NextResponse.json({ valid: false, reason: "not_found" });
   }
 
-  if (invitation.usedAt) {
+  // Only email-targeted invites are single-use; open invites stay valid indefinitely
+  if (invitation.email && invitation.usedAt) {
     return NextResponse.json({ valid: false, reason: "already_used" });
   }
 
@@ -50,5 +57,7 @@ export async function GET(
     contributionAmount: Number(invitation.group.contributionAmount),
     frequency: invitation.group.frequency,
     memberCount: invitation.group.members.length,
+    requiresEmail: invitation.email !== null,
+    targetEmailMasked: invitation.email ? maskEmail(invitation.email) : null,
   });
 }

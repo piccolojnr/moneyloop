@@ -2,6 +2,13 @@
 
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
+import {
+  ArrowRight,
+  Building2,
+  Clock3,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -86,9 +93,10 @@ async function fetchJson<T>(url: string, fallback: string) {
 function OverviewSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-52" />
-        <Skeleton className="h-4 w-80" />
+      <div className="rounded-[2rem] border bg-card p-6 shadow-sm lg:p-8">
+        <Skeleton className="h-5 w-32" />
+        <Skeleton className="mt-4 h-10 w-80" />
+        <Skeleton className="mt-3 h-4 w-[32rem]" />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -106,8 +114,8 @@ function OverviewSkeleton() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <Card key={index}>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Card key={index} className={index === 2 ? "lg:col-span-2" : ""}>
             <CardHeader className="space-y-3">
               <Skeleton className="h-5 w-40" />
               <Skeleton className="h-4 w-56" />
@@ -147,6 +155,10 @@ function payoutStatusClass(status: PayoutRecord["status"]) {
   }
 }
 
+function countGroups(groups: GroupSummary[], status: GroupSummary["status"]) {
+  return groups.filter((group) => group.status === status).length;
+}
+
 export default function AdminOverviewPage() {
   const usersQuery = useQuery({
     queryKey: ["admin-overview-users"],
@@ -166,8 +178,7 @@ export default function AdminOverviewPage() {
 
   const isLoading =
     usersQuery.isLoading || groupsQuery.isLoading || payoutsQuery.isLoading;
-  const error =
-    usersQuery.error || groupsQuery.error || payoutsQuery.error || null;
+  const error = usersQuery.error || groupsQuery.error || payoutsQuery.error || null;
 
   if (isLoading) {
     return <OverviewSkeleton />;
@@ -205,63 +216,133 @@ export default function AdminOverviewPage() {
   const users = usersQuery.data;
   const groups = groupsQuery.data;
   const payouts = payoutsQuery.data.data;
-  const activeGroups = groups.filter((group) => group.status === "ACTIVE").length;
+  const activeGroups = countGroups(groups, "ACTIVE");
+  const pausedGroups = countGroups(groups, "PAUSED");
+  const completedGroups = countGroups(groups, "COMPLETED");
   const pendingPayouts = payouts.filter((payout) => payout.status === "PENDING").length;
+  const successfulPayouts = payouts.filter((payout) => payout.status === "SUCCESS").length;
   const recentUsers = users.slice(0, 5);
   const recentPayouts = payouts.slice(0, 5);
 
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Admin Overview</h1>
-        <p className="text-sm text-muted-foreground">
-          Platform-wide visibility into users, groups, and payout activity.
-        </p>
-      </div>
+      <section className="overflow-hidden rounded-[2rem] border bg-card shadow-sm">
+        <div className="grid gap-6 p-6 lg:grid-cols-[1.45fr_0.85fr] lg:p-8">
+          <div className="space-y-5">
+            <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100">
+              Platform oversight
+            </Badge>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+                Admin control center
+              </h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Track platform growth, inspect group activity, and review payout
+                operations from one place. Treasurer workflows continue to live in
+                the member dashboard.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/admin/groups">
+                  Review groups
+                  <ArrowRight className="ml-2 size-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link href="/admin/payouts">Inspect payouts</Link>
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+            <div className="rounded-2xl bg-muted/60 p-4">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Active groups
+              </p>
+              <p className="mt-3 text-3xl font-semibold">{activeGroups}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {pausedGroups} paused · {completedGroups} completed
+              </p>
+            </div>
+            <div className="rounded-2xl bg-muted/60 p-4">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Pending payouts
+              </p>
+              <p className="mt-3 text-3xl font-semibold">{pendingPayouts}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {successfulPayouts} recent successful payouts
+              </p>
+            </div>
+            <div className="rounded-2xl bg-muted/60 p-4">
+              <p className="text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+                Platform users
+              </p>
+              <p className="mt-3 text-3xl font-semibold">{users.length}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {users.filter((user) => user.role === "ADMIN").length} admins
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardDescription>Total users</CardDescription>
-            <CardTitle className="text-3xl">{users.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin/members">View users</Link>
-            </Button>
-          </CardContent>
-        </Card>
+        {[
+          {
+            title: "Platform users",
+            value: users.length,
+            note: "Registered accounts",
+            href: "/admin/members",
+            icon: Users,
+          },
+          {
+            title: "Groups in motion",
+            value: activeGroups,
+            note: "Currently active groups",
+            href: "/admin/groups",
+            icon: Building2,
+          },
+          {
+            title: "Transfers waiting",
+            value: pendingPayouts,
+            note: "Pending payout records",
+            href: "/admin/payouts",
+            icon: Clock3,
+          },
+        ].map((stat) => {
+          const Icon = stat.icon;
 
-        <Card>
-          <CardHeader>
-            <CardDescription>Active groups</CardDescription>
-            <CardTitle className="text-3xl">{activeGroups}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin/groups">View groups</Link>
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardDescription>Pending payouts</CardDescription>
-            <CardTitle className="text-3xl">{pendingPayouts}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button asChild variant="outline" size="sm">
-              <Link href="/admin/payouts">View payouts</Link>
-            </Button>
-          </CardContent>
-        </Card>
+          return (
+            <Card key={stat.title} className="overflow-hidden shadow-sm">
+              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                <div>
+                  <CardDescription>{stat.title}</CardDescription>
+                  <CardTitle className="mt-3 text-3xl">{stat.value}</CardTitle>
+                </div>
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-muted">
+                  <Icon className="size-5 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent className="flex items-center justify-between">
+                <p className="text-sm text-muted-foreground">{stat.note}</p>
+                <Button asChild variant="ghost" size="sm" className="-mr-2">
+                  <Link href={stat.href}>Open</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Recent users</CardTitle>
-            <CardDescription>Newest platform signups.</CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+            <div>
+              <CardTitle>Recent users</CardTitle>
+              <CardDescription>Newest platform signups.</CardDescription>
+            </div>
+            <Badge variant="secondary">{recentUsers.length}</Badge>
           </CardHeader>
           <CardContent>
             {recentUsers.length === 0 ? (
@@ -273,7 +354,7 @@ export default function AdminOverviewPage() {
                 {recentUsers.map((user) => (
                   <div
                     key={user.id}
-                    className="flex items-center justify-between rounded-lg border px-4 py-3"
+                    className="flex items-center justify-between rounded-2xl border px-4 py-3"
                   >
                     <div>
                       <p className="font-medium">{user.name}</p>
@@ -295,9 +376,12 @@ export default function AdminOverviewPage() {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Recent payouts</CardTitle>
-            <CardDescription>Latest payout events across the platform.</CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+            <div>
+              <CardTitle>Recent payouts</CardTitle>
+              <CardDescription>Latest payout events across the platform.</CardDescription>
+            </div>
+            <Badge variant="secondary">{recentPayouts.length}</Badge>
           </CardHeader>
           <CardContent>
             {recentPayouts.length === 0 ? (
@@ -309,7 +393,7 @@ export default function AdminOverviewPage() {
                 {recentPayouts.map((payout) => (
                   <div
                     key={payout.id}
-                    className="flex items-center justify-between rounded-lg border px-4 py-3"
+                    className="flex items-center justify-between rounded-2xl border px-4 py-3"
                   >
                     <div>
                       <p className="font-medium">{payout.recipientName}</p>
@@ -329,6 +413,41 @@ export default function AdminOverviewPage() {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+            <div>
+              <CardTitle>Platform health</CardTitle>
+              <CardDescription>
+                Quick snapshot of how the platform is moving today.
+              </CardDescription>
+            </div>
+            <ShieldCheck className="size-5 text-muted-foreground" />
+          </CardHeader>
+          <CardContent className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl bg-muted/55 p-4">
+              <p className="text-sm font-medium">Active groups</p>
+              <p className="mt-2 text-2xl font-semibold">{activeGroups}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Groups currently collecting or paying out.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-muted/55 p-4">
+              <p className="text-sm font-medium">Pending payouts</p>
+              <p className="mt-2 text-2xl font-semibold">{pendingPayouts}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Transfers awaiting final completion.
+              </p>
+            </div>
+            <div className="rounded-2xl bg-muted/55 p-4">
+              <p className="text-sm font-medium">Visible users</p>
+              <p className="mt-2 text-2xl font-semibold">{recentUsers.length}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Recent signups surfaced on this overview.
+              </p>
+            </div>
           </CardContent>
         </Card>
       </div>

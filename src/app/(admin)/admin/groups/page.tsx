@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowUpRight, Building2, Users } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -85,115 +88,194 @@ function statusBadgeClass(status: GroupSummary["status"]) {
 
 function TableSkeleton() {
   return (
-    <div className="rounded-xl border bg-card">
-      <div className="border-b px-4 py-3">
-        <Skeleton className="h-5 w-40" />
-      </div>
-      <div className="space-y-3 p-4">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="grid grid-cols-7 gap-3">
+    <Card className="shadow-sm">
+      <CardHeader className="space-y-3">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-8 w-56" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {Array.from({ length: 5 }).map((_, rowIndex) => (
+          <div key={rowIndex} className="grid grid-cols-7 gap-3">
             {Array.from({ length: 7 }).map((__, cellIndex) => (
-              <Skeleton key={cellIndex} className="h-8 w-full" />
+              <Skeleton key={cellIndex} className="h-10 w-full" />
             ))}
           </div>
         ))}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
 export default function AdminGroupsPage() {
-  const { data, error, isLoading, refetch, isRefetching } = useQuery({
+  const groupsQuery = useQuery({
     queryKey: ["admin-groups"],
     queryFn: fetchGroups,
   });
 
+  const summary = useMemo(() => {
+    const groups = groupsQuery.data ?? [];
+    return {
+      total: groups.length,
+      active: groups.filter((group) => group.status === "ACTIVE").length,
+      members: groups.reduce((accumulator, group) => accumulator + group.memberCount, 0),
+    };
+  }, [groupsQuery.data]);
+
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">All Groups</h1>
-        <p className="text-sm text-muted-foreground">
-          Platform-wide group oversight across all treasurers and payout circles.
-        </p>
+      <section className="rounded-[2rem] border bg-card shadow-sm">
+        <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:justify-between lg:p-8">
+          <div className="space-y-3">
+            <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-100">
+              Group directory
+            </Badge>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight">All Groups</h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Inspect every group on the platform, see who is responsible for it,
+                and jump into the treasurer-facing detail view when you need context.
+              </p>
+            </div>
+          </div>
+          <div className="rounded-2xl bg-muted/60 px-4 py-3 text-sm text-muted-foreground">
+            Platform admins can open any group detail directly from this directory.
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          {
+            label: "Total groups",
+            value: summary.total,
+            note: "Groups created across the platform",
+            icon: Building2,
+          },
+          {
+            label: "Active groups",
+            value: summary.active,
+            note: "Groups currently collecting or paying out",
+            icon: ArrowUpRight,
+          },
+          {
+            label: "Members covered",
+            value: summary.members,
+            note: "Group memberships represented here",
+            icon: Users,
+          },
+        ].map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <Card key={item.label} className="shadow-sm">
+              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                <div>
+                  <CardDescription>{item.label}</CardDescription>
+                  <CardTitle className="mt-3 text-3xl">{item.value}</CardTitle>
+                </div>
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-muted">
+                  <Icon className="size-5 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{item.note}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {isLoading ? (
+      {groupsQuery.isLoading ? (
         <TableSkeleton />
-      ) : error || !data ? (
-        <Card className="border-destructive/20">
+      ) : groupsQuery.error || !groupsQuery.data ? (
+        <Card className="border-destructive/20 shadow-sm">
           <CardHeader>
             <CardTitle>Unable to load groups</CardTitle>
             <CardDescription>
-              {(error as Error | undefined)?.message ??
+              {(groupsQuery.error as Error | undefined)?.message ??
                 "Something went wrong while loading platform groups."}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <button
+            <Button
               type="button"
-              onClick={() => refetch()}
-              disabled={isRefetching}
-              className="text-sm font-medium text-foreground underline-offset-4 hover:underline"
+              variant="outline"
+              onClick={() => groupsQuery.refetch()}
+              disabled={groupsQuery.isRefetching}
             >
-              {isRefetching ? "Retrying..." : "Try again"}
-            </button>
+              {groupsQuery.isRefetching ? "Retrying..." : "Try again"}
+            </Button>
           </CardContent>
         </Card>
-      ) : data.length === 0 ? (
-        <Card>
-          <CardHeader className="items-center text-center">
-            <CardTitle>No groups yet</CardTitle>
-            <CardDescription>
-              No groups have been created on the platform yet.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center text-sm text-muted-foreground">
-            Groups created by treasurers will appear here automatically.
+      ) : groupsQuery.data.length === 0 ? (
+        <Card className="shadow-sm">
+          <CardContent className="flex min-h-72 flex-col items-center justify-center gap-4 text-center">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">No groups yet</h2>
+              <p className="max-w-md text-sm leading-6 text-muted-foreground">
+                No treasurer has created a group yet. Groups will appear here
+                automatically once members start organizing savings circles.
+              </p>
+            </div>
+            <Button asChild variant="outline">
+              <Link href="/dashboard/groups">Open member dashboard</Link>
+            </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Group directory</CardTitle>
-            <CardDescription>
-              {data.length} group{data.length === 1 ? "" : "s"} across the platform
-            </CardDescription>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <CardTitle>Platform group directory</CardTitle>
+              <CardDescription>
+                Open any row to inspect the treasurer-facing group detail page.
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="w-fit">
+              {groupsQuery.data.length} groups
+            </Badge>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Group Name</TableHead>
-                  <TableHead>Treasurer</TableHead>
-                  <TableHead>Members</TableHead>
-                  <TableHead>Frequency</TableHead>
-                  <TableHead>Amount (GHS)</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Created At</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.map((group) => (
-                  <TableRow key={group.id} className="cursor-pointer">
-                    <TableCell className="font-medium">
-                      <Link href={`/dashboard/groups/${group.id}`} className="block">
-                        {group.name}
-                      </Link>
-                    </TableCell>
-                    <TableCell>{group.treasurerName}</TableCell>
-                    <TableCell>{group.memberCount}</TableCell>
-                    <TableCell>{formatFrequency(group.frequency)}</TableCell>
-                    <TableCell>{formatCurrency(group.contributionAmount)}</TableCell>
-                    <TableCell>
-                      <Badge className={statusBadgeClass(group.status)}>
-                        {group.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(group.createdAt)}</TableCell>
+            <div className="overflow-x-auto rounded-2xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Group Name</TableHead>
+                    <TableHead>Treasurer</TableHead>
+                    <TableHead>Members</TableHead>
+                    <TableHead>Frequency</TableHead>
+                    <TableHead>Amount (GHS)</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Created At</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {groupsQuery.data.map((group) => (
+                    <TableRow key={group.id} className="group">
+                      <TableCell className="font-medium">
+                        <Link
+                          href={`/dashboard/groups/${group.id}`}
+                          className="flex items-center gap-2 hover:text-primary"
+                        >
+                          {group.name}
+                          <ArrowUpRight className="size-4 opacity-0 transition group-hover:opacity-100" />
+                        </Link>
+                      </TableCell>
+                      <TableCell>{group.treasurerName}</TableCell>
+                      <TableCell>{group.memberCount}</TableCell>
+                      <TableCell>{formatFrequency(group.frequency)}</TableCell>
+                      <TableCell>{formatCurrency(group.contributionAmount)}</TableCell>
+                      <TableCell>
+                        <Badge className={statusBadgeClass(group.status)}>
+                          {group.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(group.createdAt)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

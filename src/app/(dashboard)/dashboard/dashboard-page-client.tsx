@@ -420,7 +420,7 @@ export function DashboardPageClient() {
             ? "You have no active groups yet."
             : urgent.length > 0
               ? `${urgent.length} group${urgent.length === 1 ? "" : "s"} need${urgent.length === 1 ? "s" : ""} your contribution.`
-              : "You're all caught up across all your groups."}
+              : "You&apos;re all caught up across all your groups."}
         </p>
       </div>
 
@@ -432,7 +432,7 @@ export function DashboardPageClient() {
           </div>
           <h2 className="mt-4 text-lg font-semibold">No active cycle yet</h2>
           <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-            You're not part of an active group cycle. Once a treasurer assigns
+            You&apos;re not part of an active group cycle. Once a treasurer assigns
             your position, your dashboard will appear here.
           </p>
           <div className="mt-5 flex flex-wrap gap-3">

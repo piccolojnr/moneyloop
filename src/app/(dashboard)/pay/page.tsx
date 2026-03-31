@@ -160,7 +160,7 @@ function PaymentCard({
 
       {processing && (
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          You'll be redirected to Paystack to complete payment.
+          You&apos;ll be redirected to Paystack to complete payment.
         </p>
       )}
     </Card>
@@ -274,7 +274,7 @@ export default function PayPage() {
             <CheckCircle2 className="h-5 w-5 text-primary" />
           </div>
           <h2 className="mt-4 text-base font-semibold">
-            You're all caught up
+            You&apos;re all caught up
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             No contributions are due right now. Check back when your next cycle

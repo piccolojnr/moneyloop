@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { Shield, UserPlus, Users } from "lucide-react";
 import { z } from "zod";
 import { toast } from "sonner";
 
@@ -34,7 +35,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -77,7 +84,7 @@ async function fetchMembers() {
     const body = (await response.json().catch(() => null)) as
       | { error?: string }
       | null;
-    throw new Error(body?.error ?? "Failed to load members");
+    throw new Error(body?.error ?? "Failed to load users");
   }
 
   return (await response.json()) as Member[];
@@ -101,7 +108,7 @@ async function createMember(values: AddMemberValues) {
     throw new Error(
       typeof body === "object" && body !== null && "error" in body && typeof body.error === "string"
         ? body.error
-        : "Failed to create member"
+        : "Failed to create user"
     );
   }
 
@@ -122,22 +129,27 @@ function roleBadgeClass(role: Member["role"]) {
     : "bg-zinc-100 text-zinc-700 hover:bg-zinc-100";
 }
 
+function networkLabel(network: Member["momoNetwork"]) {
+  return network === "VodafoneCash" ? "Vodafone" : network;
+}
+
 function TableSkeleton() {
   return (
-    <div className="rounded-xl border bg-card">
-      <div className="border-b px-4 py-3">
-        <Skeleton className="h-5 w-48" />
-      </div>
-      <div className="space-y-3 p-4">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="grid grid-cols-8 gap-3">
+    <Card className="shadow-sm">
+      <CardHeader className="space-y-3">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-8 w-52" />
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {Array.from({ length: 5 }).map((_, rowIndex) => (
+          <div key={rowIndex} className="grid grid-cols-8 gap-3">
             {Array.from({ length: 8 }).map((__, cellIndex) => (
-              <Skeleton key={cellIndex} className="h-8 w-full" />
+              <Skeleton key={cellIndex} className="h-10 w-full" />
             ))}
           </div>
         ))}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -157,7 +169,7 @@ export default function AdminMembersPage() {
     },
   });
 
-  const { data, error, isLoading, refetch, isRefetching } = useQuery({
+  const membersQuery = useQuery({
     queryKey: ["admin-members"],
     queryFn: fetchMembers,
   });
@@ -165,86 +177,72 @@ export default function AdminMembersPage() {
   const addMemberMutation = useMutation({
     mutationFn: createMember,
     onSuccess: async () => {
-      toast.success("Member created successfully.");
+      toast.success("User created successfully.");
       setDialogOpen(false);
       form.reset();
       await queryClient.invalidateQueries({ queryKey: ["admin-members"] });
     },
     onError: (mutationError: Error) => {
-      toast.error(mutationError.message || "Unable to create member.");
+      toast.error(mutationError.message || "Unable to create user.");
     },
   });
 
+  const summary = useMemo(() => {
+    const users = membersQuery.data ?? [];
+    return {
+      total: users.length,
+      admins: users.filter((user) => user.role === "ADMIN").length,
+      groupedUsers: users.filter((user) => user.groupCount > 0).length,
+    };
+  }, [membersQuery.data]);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Platform Users</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage platform users and onboard new participants.
-          </p>
-        </div>
+      <section className="rounded-[2rem] border bg-card shadow-sm">
+        <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:justify-between lg:p-8">
+          <div className="space-y-3">
+            <Badge className="bg-slate-100 text-slate-700 hover:bg-slate-100">
+              User oversight
+            </Badge>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight">Platform Users</h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Review who is on the platform, how widely they participate in groups,
+                and create new accounts when you need to intervene manually.
+              </p>
+            </div>
+          </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Add Member</Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-lg">
-            <DialogHeader>
-              <DialogTitle>Add member</DialogTitle>
-              <DialogDescription>
-                Create a new member account for MoneyLoop.
-              </DialogDescription>
-            </DialogHeader>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-xl">
+                <UserPlus className="mr-2 size-4" />
+                Add Member
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Add member</DialogTitle>
+                <DialogDescription>
+                  Create a new MoneyLoop account with mobile money details.
+                </DialogDescription>
+              </DialogHeader>
 
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit((values) =>
-                  addMemberMutation.mutate(values)
-                )}
-                className="space-y-4"
-              >
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Full name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Kwame Mensah" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit((values) =>
+                    addMemberMutation.mutate(values)
                   )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="you@example.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid gap-4 sm:grid-cols-2">
+                  className="space-y-4"
+                >
                   <FormField
                     control={form.control}
-                    name="phone"
+                    name="name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Phone</FormLabel>
+                        <FormLabel>Full name</FormLabel>
                         <FormControl>
-                          <Input placeholder="0241234567" {...field} />
+                          <Input placeholder="Kwame Mensah" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -253,169 +251,249 @@ export default function AdminMembersPage() {
 
                   <FormField
                     control={form.control}
-                    name="momoNumber"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>MoMo number</FormLabel>
+                        <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="0241234567" {...field} />
+                          <Input
+                            type="email"
+                            placeholder="you@example.com"
+                            {...field}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <FormField
-                    control={form.control}
-                    name="momoNetwork"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Network</FormLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value}
-                        >
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="phone"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Phone</FormLabel>
                           <FormControl>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select network" />
-                            </SelectTrigger>
+                            <Input placeholder="0241234567" {...field} />
                           </FormControl>
-                          <SelectContent>
-                            <SelectItem value="MTN">MTN</SelectItem>
-                            <SelectItem value="VodafoneCash">Vodafone</SelectItem>
-                            <SelectItem value="AirtelTigo">AirtelTigo</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                  <FormField
-                    control={form.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                    <FormField
+                      control={form.control}
+                      name="momoNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>MoMo number</FormLabel>
+                          <FormControl>
+                            <Input placeholder="0241234567" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
 
-                <div className="flex justify-end gap-3 pt-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={addMemberMutation.isPending}>
-                    {addMemberMutation.isPending ? (
-                      <span className="flex items-center gap-2">
-                        <LoadingSpinner />
-                        Creating...
-                      </span>
-                    ) : (
-                      "Create member"
-                    )}
-                  </Button>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="momoNetwork"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Network</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select network" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="MTN">MTN</SelectItem>
+                              <SelectItem value="VodafoneCash">Vodafone</SelectItem>
+                              <SelectItem value="AirtelTigo">AirtelTigo</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <Input type="password" placeholder="••••••••" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  <div className="flex justify-end gap-3 pt-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={addMemberMutation.isPending}>
+                      {addMemberMutation.isPending ? (
+                        <span className="flex items-center gap-2">
+                          <LoadingSpinner />
+                          Creating...
+                        </span>
+                      ) : (
+                        "Create member"
+                      )}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          {
+            label: "Total users",
+            value: summary.total,
+            note: "Accounts on the platform",
+            icon: Users,
+          },
+          {
+            label: "System admins",
+            value: summary.admins,
+            note: "Users with platform access",
+            icon: Shield,
+          },
+          {
+            label: "Grouped members",
+            value: summary.groupedUsers,
+            note: "Users already attached to a group",
+            icon: UserPlus,
+          },
+        ].map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <Card key={item.label} className="shadow-sm">
+              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                <div>
+                  <CardDescription>{item.label}</CardDescription>
+                  <CardTitle className="mt-3 text-3xl">{item.value}</CardTitle>
                 </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-muted">
+                  <Icon className="size-5 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{item.note}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {isLoading ? (
+      {membersQuery.isLoading ? (
         <TableSkeleton />
-      ) : error || !data ? (
-        <Card className="border-destructive/20">
+      ) : membersQuery.error || !membersQuery.data ? (
+        <Card className="border-destructive/20 shadow-sm">
           <CardHeader>
-            <CardTitle>Unable to load members</CardTitle>
+            <CardTitle>Unable to load users</CardTitle>
             <CardDescription>
-              {(error as Error | undefined)?.message ??
-                "Something went wrong while loading member records."}
+              {(membersQuery.error as Error | undefined)?.message ??
+                "Something went wrong while loading platform users."}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Button
               type="button"
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isRefetching}
+              onClick={() => membersQuery.refetch()}
+              disabled={membersQuery.isRefetching}
             >
-              {isRefetching ? "Retrying..." : "Try again"}
+              {membersQuery.isRefetching ? "Retrying..." : "Try again"}
             </Button>
           </CardContent>
         </Card>
-      ) : data.length === 0 ? (
-        <Card>
-          <CardHeader className="items-center text-center">
-            <CardTitle>No users yet</CardTitle>
-            <CardDescription>
-              Add the first user to start onboarding people to the platform.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex justify-center">
+      ) : membersQuery.data.length === 0 ? (
+        <Card className="shadow-sm">
+          <CardContent className="flex min-h-72 flex-col items-center justify-center gap-4 text-center">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">No users yet</h2>
+              <p className="max-w-md text-sm leading-6 text-muted-foreground">
+                The platform does not have any users yet. Add the first member to
+                begin onboarding accounts and testing group operations.
+              </p>
+            </div>
             <Button type="button" onClick={() => setDialogOpen(true)}>
               Add your first user
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle>Platform users</CardTitle>
-            <CardDescription>
-              {data.length} user{data.length === 1 ? "" : "s"} registered
-            </CardDescription>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <CardTitle>User directory</CardTitle>
+              <CardDescription>
+                {membersQuery.data.length} user{membersQuery.data.length === 1 ? "" : "s"} currently visible to platform admins.
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="w-fit">
+              Updated live
+            </Badge>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Phone</TableHead>
-                  <TableHead>MoMo Number</TableHead>
-                  <TableHead>Network</TableHead>
-                  <TableHead>Groups</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Joined</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {data.map((member) => (
-                  <TableRow key={member.id}>
-                    <TableCell className="font-medium">{member.name}</TableCell>
-                    <TableCell>{member.email}</TableCell>
-                    <TableCell>{member.phone}</TableCell>
-                    <TableCell>{member.momoNumber}</TableCell>
-                    <TableCell>
-                      {member.momoNetwork === "VodafoneCash"
-                        ? "Vodafone"
-                        : member.momoNetwork}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{member.groupCount}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={roleBadgeClass(member.role)}>
-                        {member.role}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(member.createdAt)}</TableCell>
+            <div className="overflow-x-auto rounded-2xl border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>MoMo Number</TableHead>
+                    <TableHead>Network</TableHead>
+                    <TableHead>Groups</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Joined</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {membersQuery.data.map((member) => (
+                    <TableRow key={member.id}>
+                      <TableCell className="font-medium">{member.name}</TableCell>
+                      <TableCell>{member.email}</TableCell>
+                      <TableCell>{member.phone}</TableCell>
+                      <TableCell>{member.momoNumber}</TableCell>
+                      <TableCell>{networkLabel(member.momoNetwork)}</TableCell>
+                      <TableCell>
+                        <Badge variant="secondary">{member.groupCount}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={roleBadgeClass(member.role)}>
+                          {member.role}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{formatDate(member.createdAt)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       )}

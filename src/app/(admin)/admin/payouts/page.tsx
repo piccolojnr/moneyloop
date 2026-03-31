@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { CircleDollarSign, Clock3, XCircle } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,13 +98,13 @@ function payoutStatusClass(status: PayoutStatus) {
 
 function PayoutTableSkeleton() {
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader className="space-y-3">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-7 w-40" />
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-8 w-56" />
       </CardHeader>
       <CardContent className="space-y-3">
-        <Skeleton className="h-10 w-48" />
+        <Skeleton className="h-10 w-52" />
         {Array.from({ length: 5 }).map((_, index) => (
           <Skeleton key={index} className="h-10 w-full" />
         ))}
@@ -116,7 +117,7 @@ export default function AdminPayoutsPage() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<"ALL" | PayoutStatus>("ALL");
 
-  const { data, error, isLoading, refetch, isRefetching } = useQuery({
+  const payoutsQuery = useQuery({
     queryKey: ["admin-payouts", page, statusFilter],
     queryFn: () => fetchPayouts(page),
     select: (result) => ({
@@ -128,23 +129,102 @@ export default function AdminPayoutsPage() {
     }),
   });
 
+  const summary = useMemo(() => {
+    const payouts = payoutsQuery.data?.data ?? [];
+    return {
+      total: payouts.length,
+      pending: payouts.filter((payout) => payout.status === "PENDING").length,
+      failed: payouts.filter((payout) => payout.status === "FAILED").length,
+    };
+  }, [payoutsQuery.data]);
+
   return (
     <div className="space-y-6">
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">Payouts</h1>
-        <p className="text-sm text-muted-foreground">
-          Review transfer outcomes across groups and cycles.
-        </p>
+      <section className="rounded-[2rem] border bg-card shadow-sm">
+        <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:justify-between lg:p-8">
+          <div className="space-y-3">
+            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+              Transfer oversight
+            </Badge>
+            <div className="space-y-2">
+              <h1 className="text-3xl font-semibold tracking-tight">All Payouts</h1>
+              <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                Review the latest payout records, narrow down by transfer status,
+                and spot failures quickly before members escalate support requests.
+              </p>
+            </div>
+          </div>
+
+          <div className="w-full max-w-xs">
+            <p className="mb-2 text-sm font-medium">Status filter</p>
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as "ALL" | PayoutStatus)}
+            >
+              <SelectTrigger className="w-full rounded-xl">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="SUCCESS">Success</SelectItem>
+                <SelectItem value="FAILED">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          {
+            label: "Visible payouts",
+            value: summary.total,
+            note: "Records on this page after filtering",
+            icon: CircleDollarSign,
+          },
+          {
+            label: "Pending transfers",
+            value: summary.pending,
+            note: "Awaiting confirmation or completion",
+            icon: Clock3,
+          },
+          {
+            label: "Failed transfers",
+            value: summary.failed,
+            note: "Require review or a retry path",
+            icon: XCircle,
+          },
+        ].map((item) => {
+          const Icon = item.icon;
+
+          return (
+            <Card key={item.label} className="shadow-sm">
+              <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+                <div>
+                  <CardDescription>{item.label}</CardDescription>
+                  <CardTitle className="mt-3 text-3xl">{item.value}</CardTitle>
+                </div>
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-muted">
+                  <Icon className="size-5 text-muted-foreground" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{item.note}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
-      {isLoading ? (
+      {payoutsQuery.isLoading ? (
         <PayoutTableSkeleton />
-      ) : error || !data ? (
-        <Card className="border-destructive/20">
+      ) : payoutsQuery.error || !payoutsQuery.data ? (
+        <Card className="border-destructive/20 shadow-sm">
           <CardHeader>
             <CardTitle>Unable to load payouts</CardTitle>
             <CardDescription>
-              {(error as Error | undefined)?.message ??
+              {(payoutsQuery.error as Error | undefined)?.message ??
                 "Something went wrong while loading payout activity."}
             </CardDescription>
           </CardHeader>
@@ -152,119 +232,112 @@ export default function AdminPayoutsPage() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => refetch()}
-              disabled={isRefetching}
+              onClick={() => payoutsQuery.refetch()}
+              disabled={payoutsQuery.isRefetching}
             >
-              {isRefetching ? "Retrying..." : "Try again"}
+              {payoutsQuery.isRefetching ? "Retrying..." : "Try again"}
             </Button>
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardHeader>
-            <CardDescription>Payout log</CardDescription>
-            <CardTitle>Recent payout records</CardTitle>
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <CardTitle>Payout activity log</CardTitle>
+              <CardDescription>
+                Latest transfer records across all groups, newest first.
+              </CardDescription>
+            </div>
+            <Badge variant="secondary" className="w-fit">
+              Page {payoutsQuery.data.pagination.page} of{" "}
+              {payoutsQuery.data.pagination.totalPages}
+            </Badge>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Status</span>
-              <Select
-                value={statusFilter}
-                onValueChange={(value) =>
-                  setStatusFilter(value as "ALL" | PayoutStatus)
-                }
-              >
-                <SelectTrigger className="w-52">
-                  <SelectValue placeholder="Filter by status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ALL">All</SelectItem>
-                  <SelectItem value="PENDING">Pending</SelectItem>
-                  <SelectItem value="SUCCESS">Success</SelectItem>
-                  <SelectItem value="FAILED">Failed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {data.data.length === 0 ? (
-              <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No payouts match this filter yet.
-                </p>
+            {payoutsQuery.data.data.length === 0 ? (
+              <div className="flex min-h-72 flex-col items-center justify-center gap-4 text-center">
+                <div className="space-y-2">
+                  <h2 className="text-xl font-semibold">No payouts match this filter</h2>
+                  <p className="max-w-md text-sm leading-6 text-muted-foreground">
+                    No payout records were returned for the current status filter on
+                    this page. Clear the filter to see the broader payout log.
+                  </p>
+                </div>
                 {statusFilter !== "ALL" ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setStatusFilter("ALL")}
-                  >
+                  <Button type="button" variant="outline" onClick={() => setStatusFilter("ALL")}>
                     Clear filter
                   </Button>
                 ) : null}
               </div>
             ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Cycle</TableHead>
-                    <TableHead>Recipient</TableHead>
-                    <TableHead>Group</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Sent At</TableHead>
-                    <TableHead>Failure Reason</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {data.data.map((payout) => (
-                    <TableRow key={payout.id}>
-                      <TableCell>Cycle #{payout.cycleNumber}</TableCell>
-                      <TableCell className="font-medium">
-                        {payout.recipientName}
-                      </TableCell>
-                      <TableCell>{payout.groupName}</TableCell>
-                      <TableCell>{formatCurrency(payout.amount)}</TableCell>
-                      <TableCell>
-                        <Badge className={payoutStatusClass(payout.status)}>
-                          {payout.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(payout.sentAt)}</TableCell>
-                      <TableCell>
-                        {payout.status === "FAILED"
-                          ? payout.failureReason ?? "Transfer failed"
-                          : "—"}
-                      </TableCell>
+              <div className="overflow-x-auto rounded-2xl border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Cycle</TableHead>
+                      <TableHead>Recipient</TableHead>
+                      <TableHead>Group</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Sent At</TableHead>
+                      <TableHead>Failure Reason</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {payoutsQuery.data.data.map((payout) => (
+                      <TableRow key={payout.id}>
+                        <TableCell>Cycle #{payout.cycleNumber}</TableCell>
+                        <TableCell className="font-medium">
+                          {payout.recipientName}
+                        </TableCell>
+                        <TableCell>{payout.groupName}</TableCell>
+                        <TableCell>{formatCurrency(payout.amount)}</TableCell>
+                        <TableCell>
+                          <Badge className={payoutStatusClass(payout.status)}>
+                            {payout.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(payout.sentAt)}</TableCell>
+                        <TableCell>
+                          {payout.status === "FAILED"
+                            ? payout.failureReason ?? "Transfer failed"
+                            : "—"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             )}
 
-            <div className="flex items-center justify-between text-sm text-muted-foreground">
+            <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
               <span>
-                Page {data.pagination.page} of {data.pagination.totalPages}
+                Showing page {payoutsQuery.data.pagination.page} of{" "}
+                {payoutsQuery.data.pagination.totalPages}
               </span>
               <div className="flex gap-3">
-                <button
+                <Button
                   type="button"
-                  className="font-medium text-foreground disabled:text-muted-foreground"
+                  variant="outline"
+                  size="sm"
                   disabled={page <= 1}
                   onClick={() => setPage((current) => Math.max(current - 1, 1))}
                 >
                   Previous
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  className="font-medium text-foreground disabled:text-muted-foreground"
-                  disabled={page >= data.pagination.totalPages}
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= payoutsQuery.data.pagination.totalPages}
                   onClick={() =>
                     setPage((current) =>
-                      Math.min(current + 1, data.pagination.totalPages)
+                      Math.min(current + 1, payoutsQuery.data.pagination.totalPages)
                     )
                   }
                 >
                   Next
-                </button>
+                </Button>
               </div>
             </div>
           </CardContent>

@@ -40,7 +40,19 @@ export async function GET() {
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(members);
+  return NextResponse.json(
+    members.map((member) => ({
+      id: member.id,
+      name: member.name,
+      email: member.email,
+      phone: member.phone,
+      momoNumber: member.momoNumber,
+      momoNetwork: member.momoNetwork,
+      role: member.role,
+      createdAt: member.createdAt.toISOString(),
+      groupCount: member.groupMemberships.length,
+    }))
+  );
 }
 
 export async function POST(req: NextRequest) {

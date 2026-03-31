@@ -15,12 +15,13 @@ function handleRouteError(error: unknown) {
 async function getSessionUserId() {
   const session = await getRequiredSession();
   const userId = (session.user as { id?: string }).id;
+  const role = (session.user as { role?: string }).role;
 
   if (!userId) {
     throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return userId;
+  return { userId, role };
 }
 
 export async function GET(
@@ -28,16 +29,17 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const userId = await getSessionUserId();
+    const { userId, role } = await getSessionUserId();
     const { id } = await context.params;
 
     const group = await prisma.susuGroup.findFirst({
       where: {
         id,
-        OR: [
-          { treasurerId: userId },
-          { members: { some: { userId } } },
-        ],
+        ...(role === "ADMIN"
+          ? {}
+          : {
+              OR: [{ treasurerId: userId }, { members: { some: { userId } } }],
+            }),
       },
       include: {
         treasurer: {
@@ -97,6 +99,7 @@ export async function GET(
     return NextResponse.json({
       id: group.id,
       name: group.name,
+      treasurerId: group.treasurerId,
       contributionAmount: Number(group.contributionAmount),
       frequency: group.frequency,
       currentCycle: group.currentCycle,

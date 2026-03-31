@@ -24,29 +24,31 @@ function handleRouteError(error: unknown) {
 async function getSessionUserId() {
   const session = await getRequiredSession();
   const userId = (session.user as { id?: string }).id;
+  const role = (session.user as { role?: string }).role;
 
   if (!userId) {
     throw NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  return userId;
+  return { userId, role };
 }
 
 export async function GET() {
   try {
-    const userId = await getSessionUserId();
+    const { userId, role } = await getSessionUserId();
 
     const groups = await prisma.susuGroup.findMany({
-      where: {
-        OR: [
-          { treasurerId: userId },
-          { members: { some: { userId } } },
-        ],
-      },
+      where:
+        role === "ADMIN"
+          ? undefined
+          : {
+              OR: [{ treasurerId: userId }, { members: { some: { userId } } }],
+            },
       orderBy: { createdAt: "desc" },
       select: {
         id: true,
         name: true,
+        treasurerId: true,
         contributionAmount: true,
         frequency: true,
         currentCycle: true,
@@ -92,7 +94,10 @@ export async function GET() {
           createdAt: group.createdAt.toISOString(),
           memberCount: group.members.length,
           treasurerName: group.treasurer.name,
-          memberRole: membership?.memberRole ?? (group.treasurer ? "TREASURER" : null),
+          memberRole:
+            group.treasurerId === userId
+              ? "TREASURER"
+              : membership?.memberRole ?? null,
           cycle:
             group.cycles[0] === undefined
               ? null
@@ -113,7 +118,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const userId = await getSessionUserId();
+    const { userId } = await getSessionUserId();
 
     const body = await req.json();
     const parsed = CreateGroupSchema.safeParse(body);

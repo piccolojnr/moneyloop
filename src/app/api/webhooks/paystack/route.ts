@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/paystack";
 import { checkAndMarkCycleReady } from "@/lib/susu";
-import { sendPayoutNotification } from "@/lib/email";
+import { sendPayoutNotification } from "@/emails";
 import { ContributionStatus, PayoutStatus } from "@/generated/prisma/client/enums";
 
 export async function POST(req: NextRequest) {

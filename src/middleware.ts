@@ -11,6 +11,10 @@ export default withAuth(
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
+    if (pathname === "/dashboard" && isAdmin) {
+      return NextResponse.redirect(new URL("/admin", req.url));
+    }
+
     if (pathname === "/api/members" && req.method === "GET" && !isAdmin) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -29,6 +33,6 @@ export const config = {
   matcher: [
     "/dashboard/:path*",
     "/admin/:path*",
-    "/api/((?!auth|webhooks|members|invite).+)",
+    "/api/((?!auth|webhook|webhooks|members|invite).+)",
   ],
 };

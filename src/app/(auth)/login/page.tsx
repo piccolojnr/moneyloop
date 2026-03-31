@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
-import { signIn } from "next-auth/react";
+import { getSession, signIn } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ const loginSchema = z.object({
 type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
   const [authError, setAuthError] = useState<string | null>(null);
 
   const form = useForm<LoginValues>({
@@ -35,11 +35,35 @@ export default function LoginPage() {
     defaultValues: { email: "", password: "" },
   });
 
+  async function resolveRoleBasedRedirect() {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const session = await getSession();
+      const role =
+        typeof session?.user === "object" &&
+        session?.user &&
+        "role" in session.user
+          ? session.user.role
+          : undefined;
+
+      if (role) {
+        return role === "ADMIN" ? "/admin" : "/dashboard";
+      }
+
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 150);
+      });
+    }
+
+    return "/dashboard";
+  }
+
   async function onSubmit(values: LoginValues) {
     setAuthError(null);
+    const callbackUrl = searchParams.get("callbackUrl");
     const result = await signIn("credentials", {
       email: values.email,
       password: values.password,
+      callbackUrl: callbackUrl ?? undefined,
       redirect: false,
     });
 
@@ -48,7 +72,8 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
+    const targetUrl = callbackUrl ?? (await resolveRoleBasedRedirect());
+    window.location.assign(targetUrl);
   }
 
   return (

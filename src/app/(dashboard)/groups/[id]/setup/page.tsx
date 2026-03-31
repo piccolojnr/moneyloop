@@ -40,6 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 type GroupSetupDetail = {
   id: string;
   name: string;
+  treasurerId: string;
   contributionAmount: number;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
   treasurer: {
@@ -279,7 +280,8 @@ export function GroupSetupPage() {
     typeof session?.user === "object" && session?.user && "id" in session.user
       ? (session.user.id as string | undefined)
       : undefined;
-  const isTreasurer = currentUserId && data ? currentUserId === data.treasurer.id : false;
+  const isTreasurer =
+    currentUserId && data ? currentUserId === data.treasurerId : false;
   const hasCycles = (data?.cycles.length ?? 0) > 0;
   const resolvedOrderedMembers = useMemo(
     () => orderedMembers ?? (data ? sortMembers(data.members) : []),

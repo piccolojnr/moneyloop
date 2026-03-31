@@ -99,6 +99,22 @@ async function main() {
     )
   );
 
+  await prisma.invitation.upsert({
+    where: { token: "test-invite-token" },
+    update: {
+      groupId: group.id,
+      email: null,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      usedAt: null,
+    },
+    create: {
+      groupId: group.id,
+      email: null,
+      token: "test-invite-token",
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+  });
+
   // Create the first cycle (due end of this month)
   const payoutDate = new Date();
   payoutDate.setDate(28); // 28th of current month
@@ -120,6 +136,7 @@ async function main() {
 ✓ Members: akosua@test.com ... ama@test.com / password123
 ✓ Group:   MoneyLoop Group (GHS 100/month, treasurer + 5 members)
 ✓ Cycle 1: Akosua Mensah receives payout on the 28th
+✓ Invite:  /join?token=test-invite-token
   `);
 }
 

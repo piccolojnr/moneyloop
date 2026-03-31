@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { prisma } from "@/lib/prisma";
 import { getRequiredSession } from "@/lib/session";
-import { sendGroupInvite } from "@/lib/email";
+import { sendGroupInvite } from "@/emails";
 
 const CreateInviteSchema = z.object({
   email: z.string().email("Enter a valid email address").optional(),

@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { initiateTransfer, createTransferRecipient } from "@/lib/paystack";
 import { advanceToNextCycle } from "@/lib/susu";
-import { sendContributionReminder } from "@/lib/email";
+import { sendContributionReminder } from "@/emails";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";

@@ -54,6 +54,7 @@ type Member = {
   momoNetwork: "MTN" | "VodafoneCash" | "AirtelTigo";
   role: "MEMBER" | "ADMIN";
   createdAt: string;
+  groupCount: number;
 };
 
 const addMemberSchema = z.object({
@@ -129,8 +130,8 @@ function TableSkeleton() {
       </div>
       <div className="space-y-3 p-4">
         {Array.from({ length: 5 }).map((_, index) => (
-          <div key={index} className="grid grid-cols-7 gap-3">
-            {Array.from({ length: 7 }).map((__, cellIndex) => (
+          <div key={index} className="grid grid-cols-8 gap-3">
+            {Array.from({ length: 8 }).map((__, cellIndex) => (
               <Skeleton key={cellIndex} className="h-8 w-full" />
             ))}
           </div>
@@ -178,9 +179,9 @@ export default function AdminMembersPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Members</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Platform Users</h1>
           <p className="text-sm text-muted-foreground">
-            Manage member accounts and onboard new participants.
+            Manage platform users and onboard new participants.
           </p>
         </div>
 
@@ -357,23 +358,23 @@ export default function AdminMembersPage() {
       ) : data.length === 0 ? (
         <Card>
           <CardHeader className="items-center text-center">
-            <CardTitle>No members yet</CardTitle>
+            <CardTitle>No users yet</CardTitle>
             <CardDescription>
-              Add the first member to start building your susu group.
+              Add the first user to start onboarding people to the platform.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex justify-center">
             <Button type="button" onClick={() => setDialogOpen(true)}>
-              Add your first member
+              Add your first user
             </Button>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle>Member directory</CardTitle>
+            <CardTitle>Platform users</CardTitle>
             <CardDescription>
-              {data.length} member{data.length === 1 ? "" : "s"} registered
+              {data.length} user{data.length === 1 ? "" : "s"} registered
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -385,6 +386,7 @@ export default function AdminMembersPage() {
                   <TableHead>Phone</TableHead>
                   <TableHead>MoMo Number</TableHead>
                   <TableHead>Network</TableHead>
+                  <TableHead>Groups</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Joined</TableHead>
                 </TableRow>
@@ -400,6 +402,9 @@ export default function AdminMembersPage() {
                       {member.momoNetwork === "VodafoneCash"
                         ? "Vodafone"
                         : member.momoNetwork}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{member.groupCount}</Badge>
                     </TableCell>
                     <TableCell>
                       <Badge className={roleBadgeClass(member.role)}>

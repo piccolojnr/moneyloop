@@ -52,6 +52,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 type GroupDetail = {
   id: string;
   name: string;
+  treasurerId: string;
   contributionAmount: number;
   frequency: "DAILY" | "WEEKLY" | "MONTHLY";
   currentCycle: number;
@@ -285,7 +286,12 @@ export function GroupDetailPage() {
     typeof session?.user === "object" && session?.user && "id" in session.user
       ? (session.user.id as string | undefined)
       : undefined;
-  const isTreasurer = currentUserId === data.treasurer.id;
+  const currentUserRole =
+    typeof session?.user === "object" && session?.user && "role" in session.user
+      ? (session.user.role as string | undefined)
+      : undefined;
+  const isTreasurer = currentUserId === data.treasurerId;
+  const isPlatformAdmin = currentUserRole === "ADMIN";
   const hasCycles = data.cycles.length > 0;
   const recipientNames = new Map(
     data.members.map((member) => [member.userId, member.name] as const)
@@ -313,8 +319,16 @@ export function GroupDetailPage() {
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-3">
               <CardTitle className="text-2xl">{data.name}</CardTitle>
-              <Badge className={memberRoleClass(isTreasurer ? "TREASURER" : "MEMBER")}>
-                {isTreasurer ? "TREASURER" : "MEMBER"}
+              <Badge
+                className={
+                  isTreasurer
+                    ? memberRoleClass("TREASURER")
+                    : isPlatformAdmin
+                      ? "bg-violet-100 text-violet-700 hover:bg-violet-100"
+                      : memberRoleClass("MEMBER")
+                }
+              >
+                {isTreasurer ? "TREASURER" : isPlatformAdmin ? "ADMIN VIEW" : "MEMBER"}
               </Badge>
             </div>
             <CardDescription>

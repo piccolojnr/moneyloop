@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [
-  { href: "/admin/members", label: "Members" },
-  { href: "/admin/cycles", label: "Groups / Cycles" },
-  { href: "/admin/payouts", label: "Payouts" },
+  { href: "/admin", label: "Overview" },
+  { href: "/admin/members", label: "Users" },
+  { href: "/admin/groups", label: "All Groups" },
+  { href: "/admin/payouts", label: "All Payouts" },
 ];
 
 export function AdminSidebar() {
@@ -19,7 +20,7 @@ export function AdminSidebar() {
   return (
     <aside className="flex h-full w-72 flex-col border-r bg-background">
       <div className="px-6 py-6">
-        <Link href="/admin/members" className="text-lg font-semibold tracking-tight">
+        <Link href="/admin" className="text-lg font-semibold tracking-tight">
           MoneyLoop
         </Link>
       </div>
@@ -29,7 +30,10 @@ export function AdminSidebar() {
       <nav className="flex-1 px-4 py-6">
         <div className="space-y-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive =
+              item.href === "/admin"
+                ? pathname === "/admin"
+                : pathname === item.href || pathname.startsWith(`${item.href}/`);
 
             return (
               <Button

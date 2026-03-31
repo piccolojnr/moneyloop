@@ -1,19 +1,5 @@
 import "server-only";
 
-import { Resend } from "resend";
-
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-
-const emailFrom = process.env.EMAIL_FROM;
-
-function ensureEmailConfig() {
-  if (!resend || !emailFrom) {
-    throw new Error("Email configuration is missing");
-  }
-}
-
 function shellHtml({
   title,
   intro,
@@ -27,18 +13,19 @@ function shellHtml({
   ctaLabel?: string;
   ctaUrl?: string;
 }) {
-  const cta = ctaLabel && ctaUrl
-    ? `
-      <p style="margin: 24px 0 0;">
-        <a
-          href="${ctaUrl}"
-          style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 18px; border-radius: 8px; font-weight: 600;"
-        >
-          ${ctaLabel}
-        </a>
-      </p>
-    `
-    : "";
+  const cta =
+    ctaLabel && ctaUrl
+      ? `
+        <p style="margin: 24px 0 0;">
+          <a
+            href="${ctaUrl}"
+            style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 18px; border-radius: 8px; font-weight: 600;"
+          >
+            ${ctaLabel}
+          </a>
+        </p>
+      `
+      : "";
 
   return `
     <div style="background: #ffffff; color: #111827; font-family: Arial, sans-serif; line-height: 1.6; padding: 32px 20px;">
@@ -56,8 +43,7 @@ function shellHtml({
   `;
 }
 
-export async function sendContributionReminder({
-  to,
+export function buildContributionReminderTemplate({
   name,
   groupName,
   amount,
@@ -65,7 +51,6 @@ export async function sendContributionReminder({
   payoutDate,
   payNowUrl,
 }: {
-  to: string;
   name: string;
   groupName: string;
   amount: number;
@@ -73,12 +58,20 @@ export async function sendContributionReminder({
   payoutDate: string;
   payNowUrl: string;
 }) {
-  ensureEmailConfig();
-
-  await resend!.emails.send({
-    from: emailFrom!,
-    to,
+  return {
     subject: "Reminder: Your MoneyLoop contribution is due",
+    text: [
+      `Hello ${name},`,
+      "",
+      `Your contribution for ${groupName} is still pending.`,
+      `Cycle #${cycleNumber} is currently collecting contributions.`,
+      `Amount due: GHS ${amount.toFixed(2)}`,
+      `Scheduled payout date: ${payoutDate}`,
+      "",
+      `Pay now: ${payNowUrl}`,
+      "",
+      "MoneyLoop - Community Savings Made Simple",
+    ].join("\n"),
     html: shellHtml({
       title: "Your contribution is due",
       intro: `Hello ${name}, this is a reminder that your contribution for ${groupName} is still pending.`,
@@ -91,28 +84,32 @@ export async function sendContributionReminder({
       ctaLabel: "Pay now",
       ctaUrl: payNowUrl,
     }),
-  });
+  };
 }
 
-export async function sendPayoutNotification({
-  to,
+export function buildPayoutNotificationTemplate({
   name,
   groupName,
   amount,
   cycleNumber,
 }: {
-  to: string;
   name: string;
   groupName: string;
   amount: number;
   cycleNumber: number;
 }) {
-  ensureEmailConfig();
-
-  await resend!.emails.send({
-    from: emailFrom!,
-    to,
+  return {
     subject: "Your MoneyLoop payout has been sent!",
+    text: [
+      `Hello ${name},`,
+      "",
+      `Your MoneyLoop payout for ${groupName} has been sent to your MoMo account.`,
+      `Cycle #${cycleNumber} has been processed successfully.`,
+      `Amount sent: GHS ${amount.toFixed(2)}`,
+      "Please expect the funds to arrive within the next few minutes.",
+      "",
+      "MoneyLoop - Community Savings Made Simple",
+    ].join("\n"),
     html: shellHtml({
       title: "Your payout is on the way",
       intro: `Hello ${name}, congratulations. Your MoneyLoop payout for ${groupName} has been sent to your MoMo account.`,
@@ -122,30 +119,33 @@ export async function sendPayoutNotification({
         <p style="margin: 0;">Please expect the funds to arrive within the next few minutes.</p>
       `,
     }),
-  });
+  };
 }
 
-export async function sendGroupInvite({
-  to,
+export function buildGroupInviteTemplate({
   inviterName,
   groupName,
   contributionAmount,
   frequency,
   inviteUrl,
 }: {
-  to: string;
   inviterName: string;
   groupName: string;
   contributionAmount: number;
   frequency: string;
   inviteUrl: string;
 }) {
-  ensureEmailConfig();
-
-  await resend!.emails.send({
-    from: emailFrom!,
-    to,
+  return {
     subject: `${inviterName} invited you to join ${groupName} on MoneyLoop`,
+    text: [
+      `${inviterName} invited you to join ${groupName} on MoneyLoop.`,
+      `Contribution amount: GHS ${contributionAmount.toFixed(2)}`,
+      `Contribution frequency: ${frequency}`,
+      "",
+      `Accept invitation: ${inviteUrl}`,
+      "",
+      "MoneyLoop - Community Savings Made Simple",
+    ].join("\n"),
     html: shellHtml({
       title: "You have been invited to join a MoneyLoop group",
       intro: `${inviterName} invited you to join ${groupName} on MoneyLoop.`,
@@ -157,5 +157,5 @@ export async function sendGroupInvite({
       ctaLabel: "Accept Invitation",
       ctaUrl: inviteUrl,
     }),
-  });
+  };
 }

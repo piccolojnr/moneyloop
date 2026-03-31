@@ -239,7 +239,8 @@ export default function AdminGroupsPage() {
             <div>
               <CardTitle>Platform group directory</CardTitle>
               <CardDescription>
-                Open any row to inspect the treasurer-facing group detail page.
+                Open any row to inspect the platform oversight detail for that
+                group.
               </CardDescription>
             </div>
             <Badge variant="secondary" className="w-fit">
@@ -265,7 +266,7 @@ export default function AdminGroupsPage() {
                     <TableRow key={group.id} className="group">
                       <TableCell className="font-medium">
                         <Link
-                          href={`/dashboard/groups/${group.id}`}
+                          href={`/admin/groups/${group.id}`}
                           className="flex items-center gap-2 hover:text-primary"
                         >
                           {group.name}

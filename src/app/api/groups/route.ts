@@ -21,6 +21,11 @@ function handleRouteError(error: unknown) {
   return NextResponse.json({ error: "Internal server error" }, { status: 500 });
 }
 
+function parsePositiveInt(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
 async function getSessionUserId() {
   const session = await getRequiredSession();
   const userId = (session.user as { id?: string }).id;
@@ -33,84 +38,111 @@ async function getSessionUserId() {
   return { userId, role };
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
     const { userId, role } = await getSessionUserId();
+    const { searchParams } = new URL(req.url);
+    const page = parsePositiveInt(searchParams.get("page"), 1);
+    const pageSize = parsePositiveInt(searchParams.get("pageSize"), 12);
+    const shouldPaginate =
+      searchParams.has("page") || searchParams.has("pageSize");
+    const where =
+      role === "ADMIN"
+        ? undefined
+        : {
+            OR: [{ treasurerId: userId }, { members: { some: { userId } } }],
+          };
 
-    const groups = await prisma.susuGroup.findMany({
-      where:
-        role === "ADMIN"
-          ? undefined
-          : {
-              OR: [{ treasurerId: userId }, { members: { some: { userId } } }],
+    const [groups, total] = await Promise.all([
+      prisma.susuGroup.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        ...(shouldPaginate
+          ? {
+              skip: (page - 1) * pageSize,
+              take: pageSize,
+            }
+          : {}),
+        select: {
+          id: true,
+          name: true,
+          treasurerId: true,
+          contributionAmount: true,
+          frequency: true,
+          currentCycle: true,
+          status: true,
+          createdAt: true,
+          treasurer: {
+            select: {
+              name: true,
             },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        name: true,
-        treasurerId: true,
-        contributionAmount: true,
-        frequency: true,
-        currentCycle: true,
-        status: true,
-        createdAt: true,
-        treasurer: {
-          select: {
-            name: true,
+          },
+          members: {
+            select: {
+              id: true,
+              userId: true,
+              memberRole: true,
+            },
+          },
+          cycles: {
+            orderBy: { cycleNumber: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              cycleNumber: true,
+              payoutDate: true,
+              status: true,
+              totalCollected: true,
+            },
           },
         },
-        members: {
-          select: {
-            id: true,
-            userId: true,
-            memberRole: true,
-          },
-        },
-        cycles: {
-          orderBy: { cycleNumber: "desc" },
-          take: 1,
-          select: {
-            id: true,
-            cycleNumber: true,
-            payoutDate: true,
-            status: true,
-            totalCollected: true,
-          },
-        },
-      },
+      }),
+      shouldPaginate ? prisma.susuGroup.count({ where }) : Promise.resolve(0),
+    ]);
+
+    const serializedGroups = groups.map((group) => {
+      const membership = group.members.find((member) => member.userId === userId);
+
+      return {
+        id: group.id,
+        name: group.name,
+        contributionAmount: Number(group.contributionAmount),
+        frequency: group.frequency,
+        currentCycle: group.currentCycle,
+        status: group.status,
+        createdAt: group.createdAt.toISOString(),
+        memberCount: group.members.length,
+        treasurerName: group.treasurer.name,
+        memberRole:
+          group.treasurerId === userId
+            ? "TREASURER"
+            : membership?.memberRole ?? null,
+        cycle:
+          group.cycles[0] === undefined
+            ? null
+            : {
+                id: group.cycles[0].id,
+                cycleNumber: group.cycles[0].cycleNumber,
+                payoutDate: group.cycles[0].payoutDate.toISOString(),
+                status: group.cycles[0].status,
+                totalCollected: Number(group.cycles[0].totalCollected),
+              },
+      };
     });
 
-    return NextResponse.json(
-      groups.map((group) => {
-        const membership = group.members.find((member) => member.userId === userId);
+    if (!shouldPaginate) {
+      return NextResponse.json(serializedGroups);
+    }
 
-        return {
-          id: group.id,
-          name: group.name,
-          contributionAmount: Number(group.contributionAmount),
-          frequency: group.frequency,
-          currentCycle: group.currentCycle,
-          status: group.status,
-          createdAt: group.createdAt.toISOString(),
-          memberCount: group.members.length,
-          treasurerName: group.treasurer.name,
-          memberRole:
-            group.treasurerId === userId
-              ? "TREASURER"
-              : membership?.memberRole ?? null,
-          cycle:
-            group.cycles[0] === undefined
-              ? null
-              : {
-                  id: group.cycles[0].id,
-                  cycleNumber: group.cycles[0].cycleNumber,
-                  payoutDate: group.cycles[0].payoutDate.toISOString(),
-                  status: group.cycles[0].status,
-                  totalCollected: Number(group.cycles[0].totalCollected),
-                },
-        };
-      })
-    );
+    return NextResponse.json({
+      data: serializedGroups,
+      pagination: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      },
+    });
   } catch (error) {
     return handleRouteError(error);
   }

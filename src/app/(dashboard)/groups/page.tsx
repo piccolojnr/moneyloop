@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm, type Resolver } from "react-hook-form";
@@ -13,14 +13,13 @@ import { ArrowRight, Plus, Users } from "lucide-react";
 import { LoadingSpinner } from "@/components/shared/loading-spinner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Form,
@@ -69,6 +68,15 @@ const createGroupSchema = z.object({
 
 type CreateGroupValues = z.infer<typeof createGroupSchema>;
 type CreateGroupResponse = { id: string };
+type PaginatedGroupsResponse = {
+  data: GroupSummary[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+};
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -79,11 +87,11 @@ function getErrorMessage(body: unknown, fallback: string) {
   return fallback;
 }
 
-async function fetchGroups() {
-  const res = await fetch("/api/groups", { credentials: "include" });
-  const body = (await res.json().catch(() => null)) as { error?: string } | GroupSummary[] | null;
+async function fetchGroups(page: number) {
+  const res = await fetch(`/api/groups?page=${page}&pageSize=6`, { credentials: "include" });
+  const body = (await res.json().catch(() => null)) as { error?: string } | PaginatedGroupsResponse | null;
   if (!res.ok) throw new Error(getErrorMessage(body, "Failed to load groups"));
-  return body as GroupSummary[];
+  return body as PaginatedGroupsResponse;
 }
 
 async function createGroup(values: CreateGroupValues) {
@@ -274,10 +282,8 @@ function CreateGroupDialog({
 
 function GroupCard({
   group,
-  onCreateGroup,
 }: {
   group: GroupSummary;
-  onCreateGroup: () => void;
 }) {
   const status = statusConfig(group.status);
   const isTreasurer = group.memberRole === "TREASURER";
@@ -386,10 +392,11 @@ export function GroupsPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
-    queryKey: ["groups"],
-    queryFn: fetchGroups,
+    queryKey: ["groups", page],
+    queryFn: () => fetchGroups(page),
   });
 
   async function handleGroupCreated(id: string) {
@@ -397,22 +404,52 @@ export function GroupsPage() {
     router.push(`/groups/${id}/setup`);
   }
 
+  const summary = useMemo(() => {
+    const groups = data?.data ?? [];
+    return {
+      total: data?.pagination.total ?? 0,
+      active: groups.filter((group) => group.status === "ACTIVE").length,
+      treasurer: groups.filter((group) => group.memberRole === "TREASURER").length,
+    };
+  }, [data]);
+
   if (isLoading) return <GroupsSkeleton />;
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">My Groups</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Create and manage your susu groups.
-          </p>
+      <section className="rounded-[2rem] border bg-card p-6 shadow-sm lg:p-8">
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+          <div className="space-y-3">
+            <Badge className="bg-primary/10 text-primary hover:bg-primary/10">
+              Group workspace
+            </Badge>
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight">My Groups</h1>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                Create and manage the groups you belong to, track which circles
+                are active, and continue setup for the ones you treasurer.
+              </p>
+            </div>
+          </div>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create group
+          </Button>
         </div>
-        <Button onClick={() => setDialogOpen(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          New group
-        </Button>
+      </section>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          { label: "Visible groups", value: summary.total, note: "Across all pages" },
+          { label: "Active on this page", value: summary.active, note: "Groups currently running" },
+          { label: "You treasurer", value: summary.treasurer, note: "Groups you can start and manage" },
+        ].map((item) => (
+          <Card key={item.label} className="p-5 shadow-sm">
+            <p className="text-sm text-muted-foreground">{item.label}</p>
+            <p className="mt-2 text-3xl font-semibold">{item.value}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{item.note}</p>
+          </Card>
+        ))}
       </div>
 
       <CreateGroupDialog
@@ -442,7 +479,7 @@ export function GroupsPage() {
       )}
 
       {/* Empty state */}
-      {data && data.length === 0 && (
+      {data && data.data.length === 0 && (
         <Card className="border-dashed p-8">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
@@ -463,16 +500,43 @@ export function GroupsPage() {
       )}
 
       {/* Group cards */}
-      {data && data.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {data.map((group) => (
-            <GroupCard
-              key={group.id}
-              group={group}
-              onCreateGroup={() => setDialogOpen(true)}
-            />
-          ))}
-        </div>
+      {data && data.data.length > 0 && (
+        <>
+          <div className="grid gap-4 sm:grid-cols-2">
+            {data.data.map((group) => (
+              <GroupCard key={group.id} group={group} />
+            ))}
+          </div>
+          <div className="flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+            <span>
+              Showing page {data.pagination.page} of {data.pagination.totalPages}
+            </span>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page <= 1}
+                onClick={() => setPage((current) => Math.max(current - 1, 1))}
+              >
+                Previous
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={page >= data.pagination.totalPages}
+                onClick={() =>
+                  setPage((current) =>
+                    Math.min(current + 1, data.pagination.totalPages)
+                  )
+                }
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

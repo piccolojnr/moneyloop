@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpRight, Building2, Users } from "lucide-react";
 
@@ -35,14 +35,24 @@ type GroupSummary = {
   treasurerName: string;
 };
 
-async function fetchGroups() {
-  const response = await fetch("/api/groups", {
+type PaginatedGroupsResponse = {
+  data: GroupSummary[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
+async function fetchGroups(page: number) {
+  const response = await fetch(`/api/groups?page=${page}&pageSize=10`, {
     credentials: "include",
   });
 
   const body = (await response.json().catch(() => null)) as
     | { error?: string }
-    | GroupSummary[]
+    | PaginatedGroupsResponse
     | null;
 
   if (!response.ok) {
@@ -56,7 +66,7 @@ async function fetchGroups() {
     );
   }
 
-  return body as GroupSummary[];
+  return body as PaginatedGroupsResponse;
 }
 
 function formatCurrency(amount: number) {
@@ -107,13 +117,14 @@ function TableSkeleton() {
 }
 
 export default function AdminGroupsPage() {
+  const [page, setPage] = useState(1);
   const groupsQuery = useQuery({
-    queryKey: ["admin-groups"],
-    queryFn: fetchGroups,
+    queryKey: ["admin-groups", page],
+    queryFn: () => fetchGroups(page),
   });
 
   const summary = useMemo(() => {
-    const groups = groupsQuery.data ?? [];
+    const groups = groupsQuery.data?.data ?? [];
     return {
       total: groups.length,
       active: groups.filter((group) => group.status === "ACTIVE").length,
@@ -207,7 +218,7 @@ export default function AdminGroupsPage() {
             </Button>
           </CardContent>
         </Card>
-      ) : groupsQuery.data.length === 0 ? (
+      ) : groupsQuery.data.data.length === 0 ? (
         <Card className="shadow-sm">
           <CardContent className="flex min-h-72 flex-col items-center justify-center gap-4 text-center">
             <div className="space-y-2">
@@ -232,7 +243,7 @@ export default function AdminGroupsPage() {
               </CardDescription>
             </div>
             <Badge variant="secondary" className="w-fit">
-              {groupsQuery.data.length} groups
+              {groupsQuery.data.pagination.total} groups
             </Badge>
           </CardHeader>
           <CardContent>
@@ -250,7 +261,7 @@ export default function AdminGroupsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {groupsQuery.data.map((group) => (
+                  {groupsQuery.data.data.map((group) => (
                     <TableRow key={group.id} className="group">
                       <TableCell className="font-medium">
                         <Link
@@ -275,6 +286,36 @@ export default function AdminGroupsPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                Showing page {groupsQuery.data.pagination.page} of{" "}
+                {groupsQuery.data.pagination.totalPages}
+              </span>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= groupsQuery.data.pagination.totalPages}
+                  onClick={() =>
+                    setPage((current) =>
+                      Math.min(current + 1, groupsQuery.data.pagination.totalPages)
+                    )
+                  }
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

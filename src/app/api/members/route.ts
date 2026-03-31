@@ -18,42 +18,74 @@ const RegisterSchema = z.object({
   password: z.string().min(6),
 });
 
-export async function GET() {
+function parsePositiveInt(value: string | null, fallback: number) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if ((session?.user as any)?.role !== "ADMIN") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const members = await prisma.user.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      phone: true,
-      momoNumber: true,
-      momoNetwork: true,
-      role: true,
-      createdAt: true,
-      groupMemberships: {
-        include: { group: { select: { id: true, name: true } } },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const page = parsePositiveInt(req.nextUrl.searchParams.get("page"), 1);
+  const pageSize = parsePositiveInt(req.nextUrl.searchParams.get("pageSize"), 10);
+  const shouldPaginate =
+    req.nextUrl.searchParams.has("page") ||
+    req.nextUrl.searchParams.has("pageSize");
 
-  return NextResponse.json(
-    members.map((member) => ({
-      id: member.id,
-      name: member.name,
-      email: member.email,
-      phone: member.phone,
-      momoNumber: member.momoNumber,
-      momoNetwork: member.momoNetwork,
-      role: member.role,
-      createdAt: member.createdAt.toISOString(),
-      groupCount: member.groupMemberships.length,
-    }))
-  );
+  const [members, total] = await Promise.all([
+    prisma.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        momoNumber: true,
+        momoNetwork: true,
+        role: true,
+        createdAt: true,
+        groupMemberships: {
+          include: { group: { select: { id: true, name: true } } },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+      ...(shouldPaginate
+        ? {
+            skip: (page - 1) * pageSize,
+            take: pageSize,
+          }
+        : {}),
+    }),
+    shouldPaginate ? prisma.user.count() : Promise.resolve(0),
+  ]);
+
+  const serializedMembers = members.map((member) => ({
+    id: member.id,
+    name: member.name,
+    email: member.email,
+    phone: member.phone,
+    momoNumber: member.momoNumber,
+    momoNetwork: member.momoNetwork,
+    role: member.role,
+    createdAt: member.createdAt.toISOString(),
+    groupCount: member.groupMemberships.length,
+  }));
+
+  if (!shouldPaginate) {
+    return NextResponse.json(serializedMembers);
+  }
+
+  return NextResponse.json({
+    data: serializedMembers,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+  });
 }
 
 export async function POST(req: NextRequest) {

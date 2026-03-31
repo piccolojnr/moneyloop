@@ -64,6 +64,16 @@ type Member = {
   groupCount: number;
 };
 
+type PaginatedMembersResponse = {
+  data: Member[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+};
+
 const addMemberSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Enter a valid email address"),
@@ -75,8 +85,8 @@ const addMemberSchema = z.object({
 
 type AddMemberValues = z.infer<typeof addMemberSchema>;
 
-async function fetchMembers() {
-  const response = await fetch("/api/members", {
+async function fetchMembers(page: number) {
+  const response = await fetch(`/api/members?page=${page}&pageSize=10`, {
     credentials: "include",
   });
 
@@ -87,7 +97,7 @@ async function fetchMembers() {
     throw new Error(body?.error ?? "Failed to load users");
   }
 
-  return (await response.json()) as Member[];
+  return (await response.json()) as PaginatedMembersResponse;
 }
 
 async function createMember(values: AddMemberValues) {
@@ -156,6 +166,7 @@ function TableSkeleton() {
 export default function AdminMembersPage() {
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   const form = useForm<AddMemberValues>({
     resolver: standardSchemaResolver(addMemberSchema),
@@ -170,8 +181,8 @@ export default function AdminMembersPage() {
   });
 
   const membersQuery = useQuery({
-    queryKey: ["admin-members"],
-    queryFn: fetchMembers,
+    queryKey: ["admin-members", page],
+    queryFn: () => fetchMembers(page),
   });
 
   const addMemberMutation = useMutation({
@@ -188,7 +199,7 @@ export default function AdminMembersPage() {
   });
 
   const summary = useMemo(() => {
-    const users = membersQuery.data ?? [];
+    const users = membersQuery.data?.data ?? [];
     return {
       total: users.length,
       admins: users.filter((user) => user.role === "ADMIN").length,
@@ -429,7 +440,7 @@ export default function AdminMembersPage() {
             </Button>
           </CardContent>
         </Card>
-      ) : membersQuery.data.length === 0 ? (
+      ) : membersQuery.data.data.length === 0 ? (
         <Card className="shadow-sm">
           <CardContent className="flex min-h-72 flex-col items-center justify-center gap-4 text-center">
             <div className="space-y-2">
@@ -450,7 +461,7 @@ export default function AdminMembersPage() {
             <div>
               <CardTitle>User directory</CardTitle>
               <CardDescription>
-                {membersQuery.data.length} user{membersQuery.data.length === 1 ? "" : "s"} currently visible to platform admins.
+                {membersQuery.data.pagination.total} user{membersQuery.data.pagination.total === 1 ? "" : "s"} currently visible to platform admins.
               </CardDescription>
             </div>
             <Badge variant="secondary" className="w-fit">
@@ -473,7 +484,7 @@ export default function AdminMembersPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {membersQuery.data.map((member) => (
+                  {membersQuery.data.data.map((member) => (
                     <TableRow key={member.id}>
                       <TableCell className="font-medium">{member.name}</TableCell>
                       <TableCell>{member.email}</TableCell>
@@ -493,6 +504,36 @@ export default function AdminMembersPage() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+            <div className="mt-4 flex flex-col gap-3 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+              <span>
+                Showing page {membersQuery.data.pagination.page} of{" "}
+                {membersQuery.data.pagination.totalPages}
+              </span>
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((current) => Math.max(current - 1, 1))}
+                >
+                  Previous
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= membersQuery.data.pagination.totalPages}
+                  onClick={() =>
+                    setPage((current) =>
+                      Math.min(current + 1, membersQuery.data.pagination.totalPages)
+                    )
+                  }
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

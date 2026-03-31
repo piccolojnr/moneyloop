@@ -18,13 +18,22 @@ async function main() {
   // Create admin
   const admin = await prisma.user.upsert({
     where: { email: "admin@moneyloop.gh" },
-    update: {},
+    update: {
+      payoutAccountStatus: "VERIFIED",
+      payoutAccountVerifiedAt: new Date(),
+      payoutAccountLastUpdatedAt: new Date(),
+      payoutAccountChangeLockedUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
     create: {
       name: "Admin User",
       email: "admin@moneyloop.gh",
       phone: "0201234567",
       momoNumber: "0201234567",
       momoNetwork: "MTN",
+      payoutAccountStatus: "VERIFIED",
+      payoutAccountVerifiedAt: new Date(),
+      payoutAccountLastUpdatedAt: new Date(),
+      payoutAccountChangeLockedUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       role: "ADMIN",
       password,
     },
@@ -43,8 +52,22 @@ async function main() {
     memberData.map((m) =>
       prisma.user.upsert({
         where: { email: m.email },
-        update: {},
-        create: { ...m, momoNetwork: "MTN", role: "MEMBER", password },
+        update: {
+          payoutAccountStatus: "VERIFIED",
+          payoutAccountVerifiedAt: new Date(),
+          payoutAccountLastUpdatedAt: new Date(),
+          payoutAccountChangeLockedUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        },
+        create: {
+          ...m,
+          momoNetwork: "MTN",
+          payoutAccountStatus: "VERIFIED",
+          payoutAccountVerifiedAt: new Date(),
+          payoutAccountLastUpdatedAt: new Date(),
+          payoutAccountChangeLockedUntil: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          role: "MEMBER",
+          password,
+        },
       })
     )
   );

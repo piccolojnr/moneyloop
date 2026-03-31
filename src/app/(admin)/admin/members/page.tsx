@@ -57,8 +57,8 @@ type Member = {
   name: string;
   email: string;
   phone: string;
-  momoNumber: string;
-  momoNetwork: "MTN" | "VodafoneCash" | "AirtelTigo";
+  momoNumber: string | null;
+  momoNetwork: "MTN" | "VodafoneCash" | "AirtelTigo" | null;
   role: "MEMBER" | "ADMIN";
   createdAt: string;
   groupCount: number;
@@ -140,6 +140,10 @@ function roleBadgeClass(role: Member["role"]) {
 }
 
 function networkLabel(network: Member["momoNetwork"]) {
+  if (!network) {
+    return "—";
+  }
+
   return network === "VodafoneCash" ? "Vodafone" : network;
 }
 
@@ -489,7 +493,7 @@ export default function AdminMembersPage() {
                       <TableCell className="font-medium">{member.name}</TableCell>
                       <TableCell>{member.email}</TableCell>
                       <TableCell>{member.phone}</TableCell>
-                      <TableCell>{member.momoNumber}</TableCell>
+                      <TableCell>{member.momoNumber ?? "—"}</TableCell>
                       <TableCell>{networkLabel(member.momoNetwork)}</TableCell>
                       <TableCell>
                         <Badge variant="secondary">{member.groupCount}</Badge>

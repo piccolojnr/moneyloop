@@ -25,6 +25,17 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            password: true,
+            payoutAccountStatus: true,
+            momoNumber: true,
+            momoNetwork: true,
+            payoutAccountChangeLockedUntil: true,
+          },
         });
 
         if (!user) return null;
@@ -37,27 +48,72 @@ export const authOptions: NextAuthOptions = {
           name: user.name,
           email: user.email,
           role: user.role,
+          payoutAccountStatus: user.payoutAccountStatus,
+          payoutAccountReady:
+            user.payoutAccountStatus === "VERIFIED" &&
+            Boolean(user.momoNumber) &&
+            Boolean(user.momoNetwork),
+          payoutAccountChangeLockedUntil:
+            user.payoutAccountChangeLockedUntil?.toISOString() ?? null,
         };
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.payoutAccountStatus = (user as any).payoutAccountStatus;
+        token.payoutAccountReady = (user as any).payoutAccountReady;
+        token.payoutAccountChangeLockedUntil = (user as any).payoutAccountChangeLockedUntil;
         token.roleRefreshedAt = Date.now();
+      } else if (trigger === "update" && token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: {
+            role: true,
+            payoutAccountStatus: true,
+            momoNumber: true,
+            momoNetwork: true,
+            payoutAccountChangeLockedUntil: true,
+          },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.payoutAccountStatus = dbUser.payoutAccountStatus;
+          token.payoutAccountReady =
+            dbUser.payoutAccountStatus === "VERIFIED" &&
+            Boolean(dbUser.momoNumber) &&
+            Boolean(dbUser.momoNetwork);
+          token.payoutAccountChangeLockedUntil =
+            dbUser.payoutAccountChangeLockedUntil?.toISOString() ?? null;
+          token.roleRefreshedAt = Date.now();
+        }
       } else {
         // Re-fetch the role periodically so changes propagate without requiring re-login.
         const FIVE_MINUTES = 5 * 60 * 1000;
         const lastRefresh = (token.roleRefreshedAt as number) ?? 0;
-        if (Date.now() - lastRefresh > FIVE_MINUTES) {
+        if (token.payoutAccountReady !== true || Date.now() - lastRefresh > FIVE_MINUTES) {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.id as string },
-            select: { role: true },
+            select: {
+              role: true,
+              payoutAccountStatus: true,
+              momoNumber: true,
+              momoNetwork: true,
+              payoutAccountChangeLockedUntil: true,
+            },
           });
           if (dbUser) {
             token.role = dbUser.role;
+            token.payoutAccountStatus = dbUser.payoutAccountStatus;
+            token.payoutAccountReady =
+              dbUser.payoutAccountStatus === "VERIFIED" &&
+              Boolean(dbUser.momoNumber) &&
+              Boolean(dbUser.momoNetwork);
+            token.payoutAccountChangeLockedUntil =
+              dbUser.payoutAccountChangeLockedUntil?.toISOString() ?? null;
             token.roleRefreshedAt = Date.now();
           }
         }
@@ -68,6 +124,10 @@ export const authOptions: NextAuthOptions = {
       if (token) {
         (session.user as any).id = token.id as string;
         (session.user as any).role = token.role;
+        (session.user as any).payoutAccountStatus = token.payoutAccountStatus;
+        (session.user as any).payoutAccountReady = token.payoutAccountReady;
+        (session.user as any).payoutAccountChangeLockedUntil =
+          token.payoutAccountChangeLockedUntil;
       }
       return session;
     },

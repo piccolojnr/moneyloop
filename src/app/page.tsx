@@ -99,11 +99,9 @@ function Navbar({ isLoggedIn, dashHref }: { isLoggedIn: boolean; dashHref: strin
 
         {/* Mobile menu */}
         <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden">
-              <Menu className="h-5 w-5" />
-              <span className="sr-only">Open menu</span>
-            </Button>
+          <SheetTrigger className="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground md:hidden">
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Open menu</span>
           </SheetTrigger>
           <SheetContent side="right" className="w-72">
             <div className="flex flex-col gap-6 pt-6">

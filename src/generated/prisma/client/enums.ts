@@ -69,3 +69,12 @@ export const PayoutStatus = {
 } as const
 
 export type PayoutStatus = (typeof PayoutStatus)[keyof typeof PayoutStatus]
+
+
+export const PayoutAccountStatus = {
+  UNSET: 'UNSET',
+  PENDING_VERIFICATION: 'PENDING_VERIFICATION',
+  VERIFIED: 'VERIFIED'
+} as const
+
+export type PayoutAccountStatus = (typeof PayoutAccountStatus)[keyof typeof PayoutAccountStatus]

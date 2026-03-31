@@ -58,6 +58,12 @@ export async function POST(
           select: {
             userId: true,
             payoutPosition: true,
+            user: {
+              select: {
+                name: true,
+                payoutAccountStatus: true,
+              },
+            },
           },
         },
         cycles: {
@@ -98,6 +104,19 @@ export async function POST(
     if (group.members.some((member) => member.payoutPosition === null)) {
       return NextResponse.json(
         { error: "All members must have a payout position before starting the group" },
+        { status: 409 }
+      );
+    }
+
+    const unverifiedMember = group.members.find(
+      (member) => member.user.payoutAccountStatus !== "VERIFIED"
+    );
+
+    if (unverifiedMember) {
+      return NextResponse.json(
+        {
+          error: `${unverifiedMember.user.name} still needs to verify a payout account before this group can start.`,
+        },
         { status: 409 }
       );
     }

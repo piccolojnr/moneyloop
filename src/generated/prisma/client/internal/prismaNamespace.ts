@@ -975,6 +975,13 @@ export const UserScalarFieldEnum = {
   momoNumber: 'momoNumber',
   momoNetwork: 'momoNetwork',
   paystackRecipientCode: 'paystackRecipientCode',
+  payoutAccountStatus: 'payoutAccountStatus',
+  payoutAccountVerifiedAt: 'payoutAccountVerifiedAt',
+  payoutAccountLastUpdatedAt: 'payoutAccountLastUpdatedAt',
+  payoutAccountChangeLockedUntil: 'payoutAccountChangeLockedUntil',
+  payoutAccountVerificationError: 'payoutAccountVerificationError',
+  pendingMomoNumber: 'pendingMomoNumber',
+  pendingMomoNetwork: 'pendingMomoNetwork',
   role: 'role',
   password: 'password',
   createdAt: 'createdAt',
@@ -1115,16 +1122,16 @@ export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaMod
 
 
 /**
- * Reference to a field of type 'Role'
+ * Reference to a field of type 'PayoutAccountStatus'
  */
-export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
+export type EnumPayoutAccountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayoutAccountStatus'>
     
 
 
 /**
- * Reference to a field of type 'Role[]'
+ * Reference to a field of type 'PayoutAccountStatus[]'
  */
-export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
+export type ListEnumPayoutAccountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PayoutAccountStatus[]'>
     
 
 
@@ -1139,6 +1146,20 @@ export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel
  * Reference to a field of type 'DateTime[]'
  */
 export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Role'
+ */
+export type EnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role'>
+    
+
+
+/**
+ * Reference to a field of type 'Role[]'
+ */
+export type ListEnumRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Role[]'>
     
 
 

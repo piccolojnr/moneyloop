@@ -12,9 +12,23 @@ export default async function DashboardLayout({
 }) {
   const session = await getServerSession(authOptions);
   const userName = session?.user?.name;
+  const userRole =
+    typeof session?.user === "object" && session?.user && "role" in session.user
+      ? session.user.role
+      : undefined;
+  const payoutAccountReady =
+    typeof session?.user === "object" &&
+    session?.user &&
+    "payoutAccountReady" in session.user
+      ? Boolean(session.user.payoutAccountReady)
+      : false;
 
   if (!userName) {
     redirect("/login");
+  }
+
+  if (userRole !== "ADMIN" && !payoutAccountReady) {
+    redirect("/onboarding/payout-account");
   }
 
   return (

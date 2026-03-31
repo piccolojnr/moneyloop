@@ -18,21 +18,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 const registerSchema = z
   .object({
     name: z.string().min(2, "Name must be at least 2 characters"),
     email: z.string().email("Enter a valid email address"),
     phone: z.string().min(10, "Enter a valid phone number"),
-    momoNumber: z.string().min(10, "Enter a valid MoMo number"),
-    momoNetwork: z.enum(["MTN", "VodafoneCash", "AirtelTigo"]),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
   })
@@ -54,8 +45,6 @@ export default function RegisterPage() {
       name: "",
       email: "",
       phone: "",
-      momoNumber: "",
-      momoNetwork: undefined,
       password: "",
       confirmPassword: "",
     },
@@ -71,8 +60,6 @@ export default function RegisterPage() {
         name: values.name,
         email: values.email,
         phone: values.phone,
-        momoNumber: values.momoNumber,
-        momoNetwork: values.momoNetwork,
         password: values.password,
       }),
     });
@@ -100,7 +87,12 @@ export default function RegisterPage() {
     }
 
     const callbackUrl = searchParams.get("callbackUrl");
-    router.push(callbackUrl ?? "/dashboard");
+    const onboardingUrl = new URL(
+      "/onboarding/payout-account",
+      window.location.origin
+    );
+    onboardingUrl.searchParams.set("next", callbackUrl ?? "/dashboard");
+    router.push(onboardingUrl.pathname + onboardingUrl.search);
   }
 
   return (
@@ -108,7 +100,7 @@ export default function RegisterPage() {
       <div className="space-y-1">
         <h1 className="text-lg font-semibold">Create an account</h1>
         <p className="text-sm text-muted-foreground">
-          Join your susu group on MoneyLoop.
+          Join MoneyLoop. You will verify your payout account right after signup.
         </p>
       </div>
 
@@ -170,48 +162,6 @@ export default function RegisterPage() {
             )}
           />
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField
-              control={form.control}
-              name="momoNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>MoMo number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="0241234567" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="momoNetwork"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Network</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="MTN">MTN</SelectItem>
-                      <SelectItem value="VodafoneCash">Vodafone</SelectItem>
-                      <SelectItem value="AirtelTigo">AirtelTigo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
           <FormField
             control={form.control}
             name="password"
@@ -249,6 +199,10 @@ export default function RegisterPage() {
               </FormItem>
             )}
           />
+
+          <div className="rounded-xl border bg-muted/40 px-4 py-3 text-sm text-muted-foreground">
+            After signup, you will verify the mobile money account that should receive your payouts.
+          </div>
 
           {serverError && (
             <p className="text-sm font-medium text-destructive">

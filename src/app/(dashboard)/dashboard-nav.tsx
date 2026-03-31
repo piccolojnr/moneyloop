@@ -8,6 +8,7 @@ import {
   Users,
   History,
   CreditCard,
+  Settings,
   LogOut,
   Menu,
   ChevronDown,
@@ -106,6 +107,13 @@ export function DashboardNav({ userName }: DashboardNavProps) {
                 <div className="px-2 py-1.5">
                   <p className="text-sm font-medium">{userName}</p>
                 </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/account">
+                    <Settings className="mr-2 h-4 w-4" />
+                    Account
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
@@ -206,6 +214,18 @@ function MobileDrawer({
             </Link>
           );
         })}
+        <Link
+          href="/account"
+          className={cn(
+            "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
+            pathname.startsWith("/account")
+              ? "bg-primary/10 text-primary"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          )}
+        >
+          <Settings className={cn("h-5 w-5", pathname.startsWith("/account") && "stroke-[2.5]")} />
+          Account
+        </Link>
       </nav>
 
       {/* Sign out */}

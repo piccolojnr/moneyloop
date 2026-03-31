@@ -53,6 +53,7 @@ type GroupSetupDetail = {
     name: string;
     payoutPosition: number | null;
     memberRole: "TREASURER" | "MEMBER";
+    payoutAccountStatus: "UNSET" | "PENDING_VERIFICATION" | "VERIFIED";
   }>;
   cycles: Array<{
     id: string;
@@ -295,6 +296,13 @@ export function GroupSetupPage() {
     () => orderedMembers ?? (data ? sortMembers(data.members) : []),
     [data, orderedMembers],
   );
+  const unverifiedMembers = useMemo(
+    () =>
+      data?.members.filter(
+        (member) => member.payoutAccountStatus !== "VERIFIED"
+      ) ?? [],
+    [data],
+  );
 
   useEffect(() => {
     if (!data || sessionStatus === "loading") {
@@ -393,6 +401,31 @@ export function GroupSetupPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          <Button asChild>
+            <Link href={`/groups/${groupId}`}>Back to group</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (unverifiedMembers.length > 0) {
+    return (
+      <Card className="max-w-3xl border-amber-200 bg-amber-50/60">
+        <CardHeader>
+          <CardTitle>Members still need payout onboarding</CardTitle>
+          <CardDescription>
+            Every member must verify a payout account before this group can start.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2 text-sm text-muted-foreground">
+            {unverifiedMembers.map((member) => (
+              <div key={member.userId} className="rounded-xl border bg-background px-4 py-3">
+                {member.name}
+              </div>
+            ))}
+          </div>
           <Button asChild>
             <Link href={`/groups/${groupId}`}>Back to group</Link>
           </Button>

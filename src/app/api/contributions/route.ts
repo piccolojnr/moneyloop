@@ -12,19 +12,22 @@ import { rateLimit, rateLimitExceededResponse } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
-  if (!session?.user?.id) {
+  const userId =
+    typeof session?.user === "object" && session?.user && "id" in session.user
+      ? (session.user.id as string | undefined)
+      : undefined;
+
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rl = rateLimit(`contribute:${session.user.id}`, 10, 60 * 1000);
+  const rl = rateLimit(`contribute:${userId}`, 10, 60 * 1000);
   if (!rl.allowed) return rateLimitExceededResponse(rl.resetAt);
 
   const { groupId } = await req.json();
   if (!groupId) {
     return NextResponse.json({ error: "groupId is required" }, { status: 400 });
   }
-
-  const userId = session.user.id;
 
   // Find the active cycle for this group
   const cycle = await getActiveCycle(groupId);
@@ -60,6 +63,25 @@ export async function POST(req: NextRequest) {
   }
 
   // Create or reuse the pending contribution record
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      email: true,
+      payoutAccountStatus: true,
+    },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (user.payoutAccountStatus !== "VERIFIED") {
+    return NextResponse.json(
+      { error: "Verify your payout account before contributing." },
+      { status: 409 }
+    );
+  }
+
   const contribution =
     existing ??
     (await prisma.contribution.create({
@@ -72,7 +94,6 @@ export async function POST(req: NextRequest) {
     }));
 
   // Initialize Paystack transaction
-  const user = await prisma.user.findUniqueOrThrow({ where: { id: userId } });
   const reference = `ml-contribution-${contribution.id}-${Date.now()}`;
 
   const transaction = await initializeTransaction({

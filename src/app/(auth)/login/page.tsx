@@ -26,6 +26,43 @@ const loginSchema = z.object({
 
 type LoginValues = z.infer<typeof loginSchema>;
 
+async function getPostLoginTarget(callbackUrl: string | null) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const session = await getSession();
+    const role =
+      typeof session?.user === "object" &&
+      session?.user &&
+      "role" in session.user
+        ? session.user.role
+        : undefined;
+    const payoutAccountReady =
+      typeof session?.user === "object" &&
+      session?.user &&
+      "payoutAccountReady" in session.user
+        ? Boolean(session.user.payoutAccountReady)
+        : false;
+
+    if (role) {
+      if (role !== "ADMIN" && !payoutAccountReady) {
+        const onboardingUrl = new URL(
+          "/onboarding/payout-account",
+          window.location.origin
+        );
+        onboardingUrl.searchParams.set("next", callbackUrl ?? "/dashboard");
+        return onboardingUrl.pathname + onboardingUrl.search;
+      }
+
+      return callbackUrl ?? (role === "ADMIN" ? "/admin" : "/dashboard");
+    }
+
+    await new Promise((resolve) => {
+      window.setTimeout(resolve, 150);
+    });
+  }
+
+  return callbackUrl ?? "/dashboard";
+}
+
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const [authError, setAuthError] = useState<string | null>(null);
@@ -34,28 +71,6 @@ export default function LoginPage() {
     resolver: standardSchemaResolver(loginSchema),
     defaultValues: { email: "", password: "" },
   });
-
-  async function resolveRoleBasedRedirect() {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const session = await getSession();
-      const role =
-        typeof session?.user === "object" &&
-        session?.user &&
-        "role" in session.user
-          ? session.user.role
-          : undefined;
-
-      if (role) {
-        return role === "ADMIN" ? "/admin" : "/dashboard";
-      }
-
-      await new Promise((resolve) => {
-        window.setTimeout(resolve, 150);
-      });
-    }
-
-    return "/dashboard";
-  }
 
   async function onSubmit(values: LoginValues) {
     setAuthError(null);
@@ -72,7 +87,7 @@ export default function LoginPage() {
       return;
     }
 
-    const targetUrl = callbackUrl ?? (await resolveRoleBasedRedirect());
+    const targetUrl = await getPostLoginTarget(callbackUrl);
     window.location.assign(targetUrl);
   }
 

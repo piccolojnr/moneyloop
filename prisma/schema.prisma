@@ -55,6 +55,12 @@ enum PayoutStatus {
   FAILED
 }
 
+enum PayoutAccountStatus {
+  UNSET
+  PENDING_VERIFICATION
+  VERIFIED
+}
+
 // ─────────────────────────────────────────
 // Models
 // ─────────────────────────────────────────
@@ -64,9 +70,16 @@ model User {
   name        String
   email       String   @unique
   phone       String
-  momoNumber            String // MoMo number for receiving payouts
-  momoNetwork           String   @default("MTN") // MTN | Vodafone | AirtelTigo
+  momoNumber            String? // Active MoMo number for receiving payouts
+  momoNetwork           String? // MTN | VodafoneCash | AirtelTigo
   paystackRecipientCode String? // Cached Paystack transfer recipient code — avoids re-creating on every payout
+  payoutAccountStatus   PayoutAccountStatus @default(UNSET)
+  payoutAccountVerifiedAt DateTime?
+  payoutAccountLastUpdatedAt DateTime?
+  payoutAccountChangeLockedUntil DateTime?
+  payoutAccountVerificationError String?
+  pendingMomoNumber String?
+  pendingMomoNetwork String?
   role                  Role     @default(MEMBER)
   password    String // hashed with bcrypt
   createdAt   DateTime @default(now())

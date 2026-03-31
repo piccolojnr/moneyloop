@@ -523,10 +523,6 @@ export type EnumContributionStatusFieldUpdateOperationsInput = {
   set?: $Enums.ContributionStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type ContributionCreateWithoutUserInput = {
   id?: string
   amount: runtime.Decimal | runtime.DecimalJsLike | number | string

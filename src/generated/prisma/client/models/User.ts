@@ -32,6 +32,13 @@ export type UserMinAggregateOutputType = {
   momoNumber: string | null
   momoNetwork: string | null
   paystackRecipientCode: string | null
+  payoutAccountStatus: $Enums.PayoutAccountStatus | null
+  payoutAccountVerifiedAt: Date | null
+  payoutAccountLastUpdatedAt: Date | null
+  payoutAccountChangeLockedUntil: Date | null
+  payoutAccountVerificationError: string | null
+  pendingMomoNumber: string | null
+  pendingMomoNetwork: string | null
   role: $Enums.Role | null
   password: string | null
   createdAt: Date | null
@@ -46,6 +53,13 @@ export type UserMaxAggregateOutputType = {
   momoNumber: string | null
   momoNetwork: string | null
   paystackRecipientCode: string | null
+  payoutAccountStatus: $Enums.PayoutAccountStatus | null
+  payoutAccountVerifiedAt: Date | null
+  payoutAccountLastUpdatedAt: Date | null
+  payoutAccountChangeLockedUntil: Date | null
+  payoutAccountVerificationError: string | null
+  pendingMomoNumber: string | null
+  pendingMomoNetwork: string | null
   role: $Enums.Role | null
   password: string | null
   createdAt: Date | null
@@ -60,6 +74,13 @@ export type UserCountAggregateOutputType = {
   momoNumber: number
   momoNetwork: number
   paystackRecipientCode: number
+  payoutAccountStatus: number
+  payoutAccountVerifiedAt: number
+  payoutAccountLastUpdatedAt: number
+  payoutAccountChangeLockedUntil: number
+  payoutAccountVerificationError: number
+  pendingMomoNumber: number
+  pendingMomoNetwork: number
   role: number
   password: number
   createdAt: number
@@ -76,6 +97,13 @@ export type UserMinAggregateInputType = {
   momoNumber?: true
   momoNetwork?: true
   paystackRecipientCode?: true
+  payoutAccountStatus?: true
+  payoutAccountVerifiedAt?: true
+  payoutAccountLastUpdatedAt?: true
+  payoutAccountChangeLockedUntil?: true
+  payoutAccountVerificationError?: true
+  pendingMomoNumber?: true
+  pendingMomoNetwork?: true
   role?: true
   password?: true
   createdAt?: true
@@ -90,6 +118,13 @@ export type UserMaxAggregateInputType = {
   momoNumber?: true
   momoNetwork?: true
   paystackRecipientCode?: true
+  payoutAccountStatus?: true
+  payoutAccountVerifiedAt?: true
+  payoutAccountLastUpdatedAt?: true
+  payoutAccountChangeLockedUntil?: true
+  payoutAccountVerificationError?: true
+  pendingMomoNumber?: true
+  pendingMomoNetwork?: true
   role?: true
   password?: true
   createdAt?: true
@@ -104,6 +139,13 @@ export type UserCountAggregateInputType = {
   momoNumber?: true
   momoNetwork?: true
   paystackRecipientCode?: true
+  payoutAccountStatus?: true
+  payoutAccountVerifiedAt?: true
+  payoutAccountLastUpdatedAt?: true
+  payoutAccountChangeLockedUntil?: true
+  payoutAccountVerificationError?: true
+  pendingMomoNumber?: true
+  pendingMomoNetwork?: true
   role?: true
   password?: true
   createdAt?: true
@@ -188,9 +230,16 @@ export type UserGroupByOutputType = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork: string
+  momoNumber: string | null
+  momoNetwork: string | null
   paystackRecipientCode: string | null
+  payoutAccountStatus: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt: Date | null
+  payoutAccountLastUpdatedAt: Date | null
+  payoutAccountChangeLockedUntil: Date | null
+  payoutAccountVerificationError: string | null
+  pendingMomoNumber: string | null
+  pendingMomoNetwork: string | null
   role: $Enums.Role
   password: string
   createdAt: Date
@@ -223,9 +272,16 @@ export type UserWhereInput = {
   name?: Prisma.StringFilter<"User"> | string
   email?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringFilter<"User"> | string
-  momoNumber?: Prisma.StringFilter<"User"> | string
-  momoNetwork?: Prisma.StringFilter<"User"> | string
+  momoNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  momoNetwork?: Prisma.StringNullableFilter<"User"> | string | null
   paystackRecipientCode?: Prisma.StringNullableFilter<"User"> | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFilter<"User"> | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  payoutAccountVerificationError?: Prisma.StringNullableFilter<"User"> | string | null
+  pendingMomoNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  pendingMomoNetwork?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   password?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -241,9 +297,16 @@ export type UserOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
-  momoNumber?: Prisma.SortOrder
-  momoNetwork?: Prisma.SortOrder
+  momoNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  momoNetwork?: Prisma.SortOrderInput | Prisma.SortOrder
   paystackRecipientCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountStatus?: Prisma.SortOrder
+  payoutAccountVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountLastUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountChangeLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountVerificationError?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingMomoNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingMomoNetwork?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -262,9 +325,16 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   name?: Prisma.StringFilter<"User"> | string
   phone?: Prisma.StringFilter<"User"> | string
-  momoNumber?: Prisma.StringFilter<"User"> | string
-  momoNetwork?: Prisma.StringFilter<"User"> | string
+  momoNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  momoNetwork?: Prisma.StringNullableFilter<"User"> | string | null
   paystackRecipientCode?: Prisma.StringNullableFilter<"User"> | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFilter<"User"> | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.DateTimeNullableFilter<"User"> | Date | string | null
+  payoutAccountVerificationError?: Prisma.StringNullableFilter<"User"> | string | null
+  pendingMomoNumber?: Prisma.StringNullableFilter<"User"> | string | null
+  pendingMomoNetwork?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   password?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -280,9 +350,16 @@ export type UserOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   email?: Prisma.SortOrder
   phone?: Prisma.SortOrder
-  momoNumber?: Prisma.SortOrder
-  momoNetwork?: Prisma.SortOrder
+  momoNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  momoNetwork?: Prisma.SortOrderInput | Prisma.SortOrder
   paystackRecipientCode?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountStatus?: Prisma.SortOrder
+  payoutAccountVerifiedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountLastUpdatedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountChangeLockedUntil?: Prisma.SortOrderInput | Prisma.SortOrder
+  payoutAccountVerificationError?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingMomoNumber?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingMomoNetwork?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -300,9 +377,16 @@ export type UserScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"User"> | string
   email?: Prisma.StringWithAggregatesFilter<"User"> | string
   phone?: Prisma.StringWithAggregatesFilter<"User"> | string
-  momoNumber?: Prisma.StringWithAggregatesFilter<"User"> | string
-  momoNetwork?: Prisma.StringWithAggregatesFilter<"User"> | string
+  momoNumber?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  momoNetwork?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   paystackRecipientCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusWithAggregatesFilter<"User"> | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.DateTimeNullableWithAggregatesFilter<"User"> | Date | string | null
+  payoutAccountVerificationError?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  pendingMomoNumber?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  pendingMomoNetwork?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -314,9 +398,16 @@ export type UserCreateInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -332,9 +423,16 @@ export type UserUncheckedCreateInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -350,9 +448,16 @@ export type UserUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -368,9 +473,16 @@ export type UserUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -386,9 +498,16 @@ export type UserCreateManyInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -400,9 +519,16 @@ export type UserUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -414,9 +540,16 @@ export type UserUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -431,6 +564,13 @@ export type UserCountOrderByAggregateInput = {
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
   paystackRecipientCode?: Prisma.SortOrder
+  payoutAccountStatus?: Prisma.SortOrder
+  payoutAccountVerifiedAt?: Prisma.SortOrder
+  payoutAccountLastUpdatedAt?: Prisma.SortOrder
+  payoutAccountChangeLockedUntil?: Prisma.SortOrder
+  payoutAccountVerificationError?: Prisma.SortOrder
+  pendingMomoNumber?: Prisma.SortOrder
+  pendingMomoNetwork?: Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -445,6 +585,13 @@ export type UserMaxOrderByAggregateInput = {
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
   paystackRecipientCode?: Prisma.SortOrder
+  payoutAccountStatus?: Prisma.SortOrder
+  payoutAccountVerifiedAt?: Prisma.SortOrder
+  payoutAccountLastUpdatedAt?: Prisma.SortOrder
+  payoutAccountChangeLockedUntil?: Prisma.SortOrder
+  payoutAccountVerificationError?: Prisma.SortOrder
+  pendingMomoNumber?: Prisma.SortOrder
+  pendingMomoNetwork?: Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -459,6 +606,13 @@ export type UserMinOrderByAggregateInput = {
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
   paystackRecipientCode?: Prisma.SortOrder
+  payoutAccountStatus?: Prisma.SortOrder
+  payoutAccountVerifiedAt?: Prisma.SortOrder
+  payoutAccountLastUpdatedAt?: Prisma.SortOrder
+  payoutAccountChangeLockedUntil?: Prisma.SortOrder
+  payoutAccountVerificationError?: Prisma.SortOrder
+  pendingMomoNumber?: Prisma.SortOrder
+  pendingMomoNetwork?: Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -476,6 +630,14 @@ export type StringFieldUpdateOperationsInput = {
 
 export type NullableStringFieldUpdateOperationsInput = {
   set?: string | null
+}
+
+export type EnumPayoutAccountStatusFieldUpdateOperationsInput = {
+  set?: $Enums.PayoutAccountStatus
+}
+
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
 }
 
 export type EnumRoleFieldUpdateOperationsInput = {
@@ -547,9 +709,16 @@ export type UserCreateWithoutTreasurerOfInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -564,9 +733,16 @@ export type UserUncheckedCreateWithoutTreasurerOfInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -597,9 +773,16 @@ export type UserUpdateWithoutTreasurerOfInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -614,9 +797,16 @@ export type UserUncheckedUpdateWithoutTreasurerOfInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -631,9 +821,16 @@ export type UserCreateWithoutGroupMembershipsInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -648,9 +845,16 @@ export type UserUncheckedCreateWithoutGroupMembershipsInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -681,9 +885,16 @@ export type UserUpdateWithoutGroupMembershipsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -698,9 +909,16 @@ export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -715,9 +933,16 @@ export type UserCreateWithoutContributionsInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -732,9 +957,16 @@ export type UserUncheckedCreateWithoutContributionsInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -765,9 +997,16 @@ export type UserUpdateWithoutContributionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -782,9 +1021,16 @@ export type UserUncheckedUpdateWithoutContributionsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -799,9 +1045,16 @@ export type UserCreateWithoutPayoutsReceivedInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -816,9 +1069,16 @@ export type UserUncheckedCreateWithoutPayoutsReceivedInput = {
   name: string
   email: string
   phone: string
-  momoNumber: string
-  momoNetwork?: string
+  momoNumber?: string | null
+  momoNetwork?: string | null
   paystackRecipientCode?: string | null
+  payoutAccountStatus?: $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Date | string | null
+  payoutAccountLastUpdatedAt?: Date | string | null
+  payoutAccountChangeLockedUntil?: Date | string | null
+  payoutAccountVerificationError?: string | null
+  pendingMomoNumber?: string | null
+  pendingMomoNetwork?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -849,9 +1109,16 @@ export type UserUpdateWithoutPayoutsReceivedInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -866,9 +1133,16 @@ export type UserUncheckedUpdateWithoutPayoutsReceivedInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   email?: Prisma.StringFieldUpdateOperationsInput | string
   phone?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
-  momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  momoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  momoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  payoutAccountStatus?: Prisma.EnumPayoutAccountStatusFieldUpdateOperationsInput | $Enums.PayoutAccountStatus
+  payoutAccountVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountLastUpdatedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountChangeLockedUntil?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  payoutAccountVerificationError?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNumber?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMomoNetwork?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -944,6 +1218,13 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   momoNumber?: boolean
   momoNetwork?: boolean
   paystackRecipientCode?: boolean
+  payoutAccountStatus?: boolean
+  payoutAccountVerifiedAt?: boolean
+  payoutAccountLastUpdatedAt?: boolean
+  payoutAccountChangeLockedUntil?: boolean
+  payoutAccountVerificationError?: boolean
+  pendingMomoNumber?: boolean
+  pendingMomoNetwork?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
@@ -963,6 +1244,13 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   momoNumber?: boolean
   momoNetwork?: boolean
   paystackRecipientCode?: boolean
+  payoutAccountStatus?: boolean
+  payoutAccountVerifiedAt?: boolean
+  payoutAccountLastUpdatedAt?: boolean
+  payoutAccountChangeLockedUntil?: boolean
+  payoutAccountVerificationError?: boolean
+  pendingMomoNumber?: boolean
+  pendingMomoNetwork?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
@@ -977,6 +1265,13 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   momoNumber?: boolean
   momoNetwork?: boolean
   paystackRecipientCode?: boolean
+  payoutAccountStatus?: boolean
+  payoutAccountVerifiedAt?: boolean
+  payoutAccountLastUpdatedAt?: boolean
+  payoutAccountChangeLockedUntil?: boolean
+  payoutAccountVerificationError?: boolean
+  pendingMomoNumber?: boolean
+  pendingMomoNetwork?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
@@ -991,13 +1286,20 @@ export type UserSelectScalar = {
   momoNumber?: boolean
   momoNetwork?: boolean
   paystackRecipientCode?: boolean
+  payoutAccountStatus?: boolean
+  payoutAccountVerifiedAt?: boolean
+  payoutAccountLastUpdatedAt?: boolean
+  payoutAccountChangeLockedUntil?: boolean
+  payoutAccountVerificationError?: boolean
+  pendingMomoNumber?: boolean
+  pendingMomoNetwork?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "momoNumber" | "momoNetwork" | "paystackRecipientCode" | "role" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "momoNumber" | "momoNetwork" | "paystackRecipientCode" | "payoutAccountStatus" | "payoutAccountVerifiedAt" | "payoutAccountLastUpdatedAt" | "payoutAccountChangeLockedUntil" | "payoutAccountVerificationError" | "pendingMomoNumber" | "pendingMomoNetwork" | "role" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupMemberships?: boolean | Prisma.User$groupMembershipsArgs<ExtArgs>
   contributions?: boolean | Prisma.User$contributionsArgs<ExtArgs>
@@ -1021,9 +1323,16 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     name: string
     email: string
     phone: string
-    momoNumber: string
-    momoNetwork: string
+    momoNumber: string | null
+    momoNetwork: string | null
     paystackRecipientCode: string | null
+    payoutAccountStatus: $Enums.PayoutAccountStatus
+    payoutAccountVerifiedAt: Date | null
+    payoutAccountLastUpdatedAt: Date | null
+    payoutAccountChangeLockedUntil: Date | null
+    payoutAccountVerificationError: string | null
+    pendingMomoNumber: string | null
+    pendingMomoNetwork: string | null
     role: $Enums.Role
     password: string
     createdAt: Date
@@ -1462,6 +1771,13 @@ export interface UserFieldRefs {
   readonly momoNumber: Prisma.FieldRef<"User", 'String'>
   readonly momoNetwork: Prisma.FieldRef<"User", 'String'>
   readonly paystackRecipientCode: Prisma.FieldRef<"User", 'String'>
+  readonly payoutAccountStatus: Prisma.FieldRef<"User", 'PayoutAccountStatus'>
+  readonly payoutAccountVerifiedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly payoutAccountLastUpdatedAt: Prisma.FieldRef<"User", 'DateTime'>
+  readonly payoutAccountChangeLockedUntil: Prisma.FieldRef<"User", 'DateTime'>
+  readonly payoutAccountVerificationError: Prisma.FieldRef<"User", 'String'>
+  readonly pendingMomoNumber: Prisma.FieldRef<"User", 'String'>
+  readonly pendingMomoNetwork: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

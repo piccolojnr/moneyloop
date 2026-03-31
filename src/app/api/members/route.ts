@@ -13,8 +13,8 @@ const RegisterSchema = z.object({
   name: z.string().min(2),
   email: z.string().email(),
   phone: z.string().min(10),
-  momoNumber: z.string().min(10),
-  momoNetwork: z.enum(["MTN", "VodafoneCash", "AirtelTigo"]).default("MTN"),
+  momoNumber: z.string().min(10).optional(),
+  momoNetwork: z.enum(["MTN", "VodafoneCash", "AirtelTigo"]).optional(),
   password: z.string().min(6),
 });
 
@@ -109,7 +109,16 @@ export async function POST(req: NextRequest) {
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const user = await prisma.user.create({
-    data: { name, email, phone, momoNumber, momoNetwork, password: hashedPassword },
+    data: {
+      name,
+      email,
+      phone,
+      momoNumber: momoNumber ?? null,
+      momoNetwork: momoNetwork ?? null,
+      payoutAccountStatus:
+        momoNumber && momoNetwork ? "PENDING_VERIFICATION" : "UNSET",
+      password: hashedPassword,
+    },
     select: { id: true, name: true, email: true, phone: true, role: true, createdAt: true },
   });
 

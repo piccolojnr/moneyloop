@@ -140,6 +140,16 @@ export async function GET(req: NextRequest) {
         where: { id: cycle.recipientId },
       });
 
+      if (
+        recipient.payoutAccountStatus !== "VERIFIED" ||
+        !recipient.momoNumber ||
+        !recipient.momoNetwork
+      ) {
+        throw new Error(
+          `Recipient ${recipient.name} does not have a verified payout account.`
+        );
+      }
+
       // Reuse the cached Paystack recipient code if the user already has one,
       // otherwise create a new recipient and cache the code for future payouts.
       let recipientCode = recipient.paystackRecipientCode;

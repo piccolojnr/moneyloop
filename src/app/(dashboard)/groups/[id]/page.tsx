@@ -52,7 +52,8 @@ type GroupDetail = {
     name: string;
     email: string;
     phone: string;
-    momoNumber: string;
+    momoNumber: string | null;
+    payoutAccountStatus: "UNSET" | "PENDING_VERIFICATION" | "VERIFIED";
     payoutPosition: number | null;
     memberRole: "TREASURER" | "MEMBER";
     joinedAt: string;
@@ -454,19 +455,32 @@ export function GroupDetailPage() {
 
                   {/* MoMo — hidden on small screens */}
                   <p className="hidden text-xs text-muted-foreground sm:block">
-                    {member.momoNumber}
+                    {member.momoNumber ?? "No payout account yet"}
                   </p>
 
                   {/* Role badge */}
-                  <Badge
-                    className={
-                      member.memberRole === "TREASURER"
-                        ? "bg-primary/10 text-primary hover:bg-primary/10 shrink-0"
-                        : "bg-muted text-muted-foreground hover:bg-muted shrink-0"
-                    }
-                  >
-                    {member.memberRole === "TREASURER" ? "Treasurer" : "Member"}
-                  </Badge>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      className={
+                        member.payoutAccountStatus === "VERIFIED"
+                          ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 shrink-0"
+                          : "bg-amber-100 text-amber-700 hover:bg-amber-100 shrink-0"
+                      }
+                    >
+                      {member.payoutAccountStatus === "VERIFIED"
+                        ? "Payout verified"
+                        : "Needs onboarding"}
+                    </Badge>
+                    <Badge
+                      className={
+                        member.memberRole === "TREASURER"
+                          ? "bg-primary/10 text-primary hover:bg-primary/10 shrink-0"
+                          : "bg-muted text-muted-foreground hover:bg-muted shrink-0"
+                      }
+                    >
+                      {member.memberRole === "TREASURER" ? "Treasurer" : "Member"}
+                    </Badge>
+                  </div>
                 </div>
               ))}
             </div>

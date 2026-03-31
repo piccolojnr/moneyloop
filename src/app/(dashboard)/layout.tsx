@@ -20,7 +20,8 @@ export default async function DashboardLayout({
   return (
     <div className="min-h-screen bg-muted/30">
       <DashboardNav userName={userName} />
-      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-6 py-8">
+      {/* pb-20 on mobile gives room for the fixed bottom tab bar */}
+      <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 pb-24 pt-6 sm:px-6 sm:pb-8 sm:pt-8 md:pb-8">
         {children}
       </main>
     </div>

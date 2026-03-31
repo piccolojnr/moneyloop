@@ -974,6 +974,7 @@ export const UserScalarFieldEnum = {
   phone: 'phone',
   momoNumber: 'momoNumber',
   momoNetwork: 'momoNetwork',
+  paystackRecipientCode: 'paystackRecipientCode',
   role: 'role',
   password: 'password',
   createdAt: 'createdAt',

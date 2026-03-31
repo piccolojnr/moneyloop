@@ -8,12 +8,16 @@ import { initializeTransaction } from "@/lib/paystack";
 import { getActiveCycle } from "@/lib/susu";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { rateLimit, rateLimitExceededResponse } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const rl = rateLimit(`contribute:${session.user.id}`, 10, 60 * 1000);
+  if (!rl.allowed) return rateLimitExceededResponse(rl.resetAt);
 
   const { groupId } = await req.json();
   if (!groupId) {

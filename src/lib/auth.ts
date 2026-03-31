@@ -46,6 +46,21 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = user.id;
         token.role = (user as any).role;
+        token.roleRefreshedAt = Date.now();
+      } else {
+        // Re-fetch the role periodically so changes propagate without requiring re-login.
+        const FIVE_MINUTES = 5 * 60 * 1000;
+        const lastRefresh = (token.roleRefreshedAt as number) ?? 0;
+        if (Date.now() - lastRefresh > FIVE_MINUTES) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id as string },
+            select: { role: true },
+          });
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.roleRefreshedAt = Date.now();
+          }
+        }
       }
       return token;
     },

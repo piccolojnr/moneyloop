@@ -519,10 +519,6 @@ export type ContributionUncheckedUpdateManyWithoutCycleNestedInput = {
   deleteMany?: Prisma.ContributionScalarWhereInput | Prisma.ContributionScalarWhereInput[]
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type EnumContributionStatusFieldUpdateOperationsInput = {
   set?: $Enums.ContributionStatus
 }

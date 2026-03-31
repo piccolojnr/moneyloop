@@ -64,9 +64,10 @@ model User {
   name        String
   email       String   @unique
   phone       String
-  momoNumber  String // MoMo number for receiving payouts
-  momoNetwork String   @default("MTN") // MTN | Vodafone | AirtelTigo
-  role        Role     @default(MEMBER)
+  momoNumber            String // MoMo number for receiving payouts
+  momoNetwork           String   @default("MTN") // MTN | Vodafone | AirtelTigo
+  paystackRecipientCode String? // Cached Paystack transfer recipient code — avoids re-creating on every payout
+  role                  Role     @default(MEMBER)
   password    String // hashed with bcrypt
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt

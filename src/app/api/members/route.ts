@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { rateLimit, getRequestIp, rateLimitExceededResponse } from "@/lib/rate-limit";
 
 const RegisterSchema = z.object({
   name: z.string().min(2),
@@ -56,6 +57,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  const rl = rateLimit(`register:${getRequestIp(req)}`, 5, 15 * 60 * 1000);
+  if (!rl.allowed) return rateLimitExceededResponse(rl.resetAt);
+
   const body = await req.json();
   const parsed = RegisterSchema.safeParse(body);
 

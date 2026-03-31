@@ -31,6 +31,7 @@ export type UserMinAggregateOutputType = {
   phone: string | null
   momoNumber: string | null
   momoNetwork: string | null
+  paystackRecipientCode: string | null
   role: $Enums.Role | null
   password: string | null
   createdAt: Date | null
@@ -44,6 +45,7 @@ export type UserMaxAggregateOutputType = {
   phone: string | null
   momoNumber: string | null
   momoNetwork: string | null
+  paystackRecipientCode: string | null
   role: $Enums.Role | null
   password: string | null
   createdAt: Date | null
@@ -57,6 +59,7 @@ export type UserCountAggregateOutputType = {
   phone: number
   momoNumber: number
   momoNetwork: number
+  paystackRecipientCode: number
   role: number
   password: number
   createdAt: number
@@ -72,6 +75,7 @@ export type UserMinAggregateInputType = {
   phone?: true
   momoNumber?: true
   momoNetwork?: true
+  paystackRecipientCode?: true
   role?: true
   password?: true
   createdAt?: true
@@ -85,6 +89,7 @@ export type UserMaxAggregateInputType = {
   phone?: true
   momoNumber?: true
   momoNetwork?: true
+  paystackRecipientCode?: true
   role?: true
   password?: true
   createdAt?: true
@@ -98,6 +103,7 @@ export type UserCountAggregateInputType = {
   phone?: true
   momoNumber?: true
   momoNetwork?: true
+  paystackRecipientCode?: true
   role?: true
   password?: true
   createdAt?: true
@@ -184,6 +190,7 @@ export type UserGroupByOutputType = {
   phone: string
   momoNumber: string
   momoNetwork: string
+  paystackRecipientCode: string | null
   role: $Enums.Role
   password: string
   createdAt: Date
@@ -218,6 +225,7 @@ export type UserWhereInput = {
   phone?: Prisma.StringFilter<"User"> | string
   momoNumber?: Prisma.StringFilter<"User"> | string
   momoNetwork?: Prisma.StringFilter<"User"> | string
+  paystackRecipientCode?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   password?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -235,6 +243,7 @@ export type UserOrderByWithRelationInput = {
   phone?: Prisma.SortOrder
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
+  paystackRecipientCode?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -255,6 +264,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   phone?: Prisma.StringFilter<"User"> | string
   momoNumber?: Prisma.StringFilter<"User"> | string
   momoNetwork?: Prisma.StringFilter<"User"> | string
+  paystackRecipientCode?: Prisma.StringNullableFilter<"User"> | string | null
   role?: Prisma.EnumRoleFilter<"User"> | $Enums.Role
   password?: Prisma.StringFilter<"User"> | string
   createdAt?: Prisma.DateTimeFilter<"User"> | Date | string
@@ -272,6 +282,7 @@ export type UserOrderByWithAggregationInput = {
   phone?: Prisma.SortOrder
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
+  paystackRecipientCode?: Prisma.SortOrderInput | Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -291,6 +302,7 @@ export type UserScalarWhereWithAggregatesInput = {
   phone?: Prisma.StringWithAggregatesFilter<"User"> | string
   momoNumber?: Prisma.StringWithAggregatesFilter<"User"> | string
   momoNetwork?: Prisma.StringWithAggregatesFilter<"User"> | string
+  paystackRecipientCode?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   role?: Prisma.EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"User"> | Date | string
@@ -304,6 +316,7 @@ export type UserCreateInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -321,6 +334,7 @@ export type UserUncheckedCreateInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -338,6 +352,7 @@ export type UserUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -355,6 +370,7 @@ export type UserUncheckedUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -372,6 +388,7 @@ export type UserCreateManyInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -385,6 +402,7 @@ export type UserUpdateManyMutationInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -398,6 +416,7 @@ export type UserUncheckedUpdateManyInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -411,6 +430,7 @@ export type UserCountOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
+  paystackRecipientCode?: Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -424,6 +444,7 @@ export type UserMaxOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
+  paystackRecipientCode?: Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -437,6 +458,7 @@ export type UserMinOrderByAggregateInput = {
   phone?: Prisma.SortOrder
   momoNumber?: Prisma.SortOrder
   momoNetwork?: Prisma.SortOrder
+  paystackRecipientCode?: Prisma.SortOrder
   role?: Prisma.SortOrder
   password?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -450,6 +472,10 @@ export type UserScalarRelationFilter = {
 
 export type StringFieldUpdateOperationsInput = {
   set?: string
+}
+
+export type NullableStringFieldUpdateOperationsInput = {
+  set?: string | null
 }
 
 export type EnumRoleFieldUpdateOperationsInput = {
@@ -523,6 +549,7 @@ export type UserCreateWithoutTreasurerOfInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -539,6 +566,7 @@ export type UserUncheckedCreateWithoutTreasurerOfInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -571,6 +599,7 @@ export type UserUpdateWithoutTreasurerOfInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -587,6 +616,7 @@ export type UserUncheckedUpdateWithoutTreasurerOfInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -603,6 +633,7 @@ export type UserCreateWithoutGroupMembershipsInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -619,6 +650,7 @@ export type UserUncheckedCreateWithoutGroupMembershipsInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -651,6 +683,7 @@ export type UserUpdateWithoutGroupMembershipsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -667,6 +700,7 @@ export type UserUncheckedUpdateWithoutGroupMembershipsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -683,6 +717,7 @@ export type UserCreateWithoutContributionsInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -699,6 +734,7 @@ export type UserUncheckedCreateWithoutContributionsInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -731,6 +767,7 @@ export type UserUpdateWithoutContributionsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -747,6 +784,7 @@ export type UserUncheckedUpdateWithoutContributionsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -763,6 +801,7 @@ export type UserCreateWithoutPayoutsReceivedInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -779,6 +818,7 @@ export type UserUncheckedCreateWithoutPayoutsReceivedInput = {
   phone: string
   momoNumber: string
   momoNetwork?: string
+  paystackRecipientCode?: string | null
   role?: $Enums.Role
   password: string
   createdAt?: Date | string
@@ -811,6 +851,7 @@ export type UserUpdateWithoutPayoutsReceivedInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -827,6 +868,7 @@ export type UserUncheckedUpdateWithoutPayoutsReceivedInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   momoNumber?: Prisma.StringFieldUpdateOperationsInput | string
   momoNetwork?: Prisma.StringFieldUpdateOperationsInput | string
+  paystackRecipientCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   role?: Prisma.EnumRoleFieldUpdateOperationsInput | $Enums.Role
   password?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -901,6 +943,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   phone?: boolean
   momoNumber?: boolean
   momoNetwork?: boolean
+  paystackRecipientCode?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
@@ -919,6 +962,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   phone?: boolean
   momoNumber?: boolean
   momoNetwork?: boolean
+  paystackRecipientCode?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
@@ -932,6 +976,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   phone?: boolean
   momoNumber?: boolean
   momoNetwork?: boolean
+  paystackRecipientCode?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
@@ -945,13 +990,14 @@ export type UserSelectScalar = {
   phone?: boolean
   momoNumber?: boolean
   momoNetwork?: boolean
+  paystackRecipientCode?: boolean
   role?: boolean
   password?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "momoNumber" | "momoNetwork" | "role" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "email" | "phone" | "momoNumber" | "momoNetwork" | "paystackRecipientCode" | "role" | "password" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   groupMemberships?: boolean | Prisma.User$groupMembershipsArgs<ExtArgs>
   contributions?: boolean | Prisma.User$contributionsArgs<ExtArgs>
@@ -977,6 +1023,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     phone: string
     momoNumber: string
     momoNetwork: string
+    paystackRecipientCode: string | null
     role: $Enums.Role
     password: string
     createdAt: Date
@@ -1414,6 +1461,7 @@ export interface UserFieldRefs {
   readonly phone: Prisma.FieldRef<"User", 'String'>
   readonly momoNumber: Prisma.FieldRef<"User", 'String'>
   readonly momoNetwork: Prisma.FieldRef<"User", 'String'>
+  readonly paystackRecipientCode: Prisma.FieldRef<"User", 'String'>
   readonly role: Prisma.FieldRef<"User", 'Role'>
   readonly password: Prisma.FieldRef<"User", 'String'>
   readonly createdAt: Prisma.FieldRef<"User", 'DateTime'>

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getRequiredSession } from "@/lib/session";
 import { sendGroupInvite } from "@/emails";
+import { rateLimit, rateLimitExceededResponse } from "@/lib/rate-limit";
 
 const CreateInviteSchema = z.object({
   email: z.string().email("Enter a valid email address").optional(),
@@ -35,6 +36,10 @@ export async function POST(
 ) {
   try {
     const user = await getSessionUser();
+
+    const rl = rateLimit(`invite:${user.id}`, 20, 60 * 60 * 1000);
+    if (!rl.allowed) return rateLimitExceededResponse(rl.resetAt);
+
     const { id: groupId } = await context.params;
     const body = await req.json();
     const parsed = CreateInviteSchema.safeParse(body);

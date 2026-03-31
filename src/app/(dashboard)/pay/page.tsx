@@ -34,10 +34,12 @@ type DashboardSummary = {
     status: "PENDING" | "READY" | "PAID" | "FAILED";
     totalCollected: number;
     recipientName: string;
+    recipientId: string;
+    requiredContributorCount: number;
     paidCount: number;
   } | null;
   myContribution: {
-    status: "PENDING" | "SUCCESS" | null;
+    status: "PENDING" | "SUCCESS" | "EXEMPT" | null;
   };
   myPayout: {
     daysUntilTurn: number;
@@ -91,6 +93,7 @@ export default function PayPage() {
   });
 
   const alreadyPaid = data?.myContribution.status === "SUCCESS";
+  const exemptThisCycle = data?.myContribution.status === "EXEMPT";
   const noCycle = !data?.group || !data?.activeCycle;
   const cycleNotPending = data?.activeCycle?.status !== "PENDING";
   const shouldAutoStart =
@@ -98,6 +101,7 @@ export default function PayPage() {
     !!data.group &&
     !!data.activeCycle &&
     !alreadyPaid &&
+    !exemptThisCycle &&
     !cycleNotPending &&
     status !== "error" &&
     message === null;
@@ -209,6 +213,8 @@ export default function PayPage() {
     data.activeCycle.status !== "PENDING";
   const title = alreadyPaid
     ? "Contribution already received"
+    : exemptThisCycle
+      ? "You are exempt this cycle"
     : noActiveCycle
       ? "No payment due right now"
       : status === "error"
@@ -216,6 +222,8 @@ export default function PayPage() {
         : "Redirecting to Paystack";
   const resolvedMessage = alreadyPaid
     ? "You have already paid your contribution for this cycle."
+    : exemptThisCycle
+      ? "You are the payout recipient for this cycle, so no contribution is required from you."
     : !data.group || !data.activeCycle
       ? "There is no active cycle available for payment right now."
       : data.activeCycle.status !== "PENDING"

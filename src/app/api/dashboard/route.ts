@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getEligibleContributorIds, getPositionedMembers } from "@/lib/susu";
 
 function addIntervals(baseDate: Date, count: number, frequency: string) {
   const nextDate = new Date(baseDate);
@@ -136,15 +137,23 @@ export async function GET() {
     });
   }
 
-  const memberCount = membership.group.members.length;
+  const positionedMembers = getPositionedMembers(membership.group.members);
+  const memberCount = positionedMembers.length;
   const recipient = membership.group.members.find(
     (member) => member.userId === activeCycle.recipientId
   );
+  const eligibleContributorIds = getEligibleContributorIds(
+    membership.group.members,
+    activeCycle.recipientId
+  );
+  const isCurrentRecipient = activeCycle.recipientId === userId;
   const myContribution = activeCycle.contributions.find(
     (contribution) => contribution.userId === userId
   );
   const paidCount = activeCycle.contributions.filter(
-    (contribution) => contribution.status === "SUCCESS"
+    (contribution) =>
+      contribution.status === "SUCCESS" &&
+      eligibleContributorIds.includes(contribution.userId)
   ).length;
 
   const cyclesUntilPayoutTurn = Math.max(
@@ -179,10 +188,12 @@ export async function GET() {
       status: activeCycle.status,
       totalCollected: Number(activeCycle.totalCollected),
       recipientName: recipient?.user.name ?? "Unknown recipient",
+      recipientId: activeCycle.recipientId,
+      requiredContributorCount: eligibleContributorIds.length,
       paidCount,
     },
     myContribution: {
-      status: myContribution?.status ?? null,
+      status: isCurrentRecipient ? "EXEMPT" : myContribution?.status ?? null,
     },
     myPayout: {
       daysUntilTurn: daysUntilMyPayout,

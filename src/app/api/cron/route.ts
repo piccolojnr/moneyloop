@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { initiateTransfer, createTransferRecipient } from "@/lib/paystack";
-import { advanceToNextCycle } from "@/lib/susu";
+import { advanceToNextCycle, getEligibleContributorIds } from "@/lib/susu";
 import { sendContributionReminder } from "@/emails";
 
 export const runtime = "nodejs";
@@ -55,6 +55,9 @@ export async function GET(req: NextRequest) {
   });
 
   for (const cycle of pendingCycles) {
+    const eligibleContributorIds = new Set(
+      getEligibleContributorIds(cycle.group.members, cycle.recipientId)
+    );
     const paidUserIds = new Set(
       cycle.contributions
         .filter((contribution) => contribution.status === "SUCCESS")
@@ -62,6 +65,10 @@ export async function GET(req: NextRequest) {
     );
 
     for (const member of cycle.group.members) {
+      if (!eligibleContributorIds.has(member.userId)) {
+        continue;
+      }
+
       if (paidUserIds.has(member.userId)) {
         continue;
       }

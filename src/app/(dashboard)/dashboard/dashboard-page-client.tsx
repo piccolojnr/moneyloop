@@ -36,10 +36,12 @@ type DashboardResponse = {
     status: "PENDING" | "READY" | "PAID" | "FAILED";
     totalCollected: number;
     recipientName: string;
+    recipientId: string;
+    requiredContributorCount: number;
     paidCount: number;
   } | null;
   myContribution: {
-    status: "PENDING" | "SUCCESS" | null;
+    status: "PENDING" | "SUCCESS" | "EXEMPT" | null;
   };
   myPayout: {
     daysUntilTurn: number;
@@ -167,13 +169,22 @@ export function DashboardPageClient() {
   }
 
   const contributionPaid = data.myContribution.status === "SUCCESS";
+  const contributionExempt = data.myContribution.status === "EXEMPT";
   const contributionPending =
     data.myContribution.status === "PENDING" ||
     data.myContribution.status === null;
+  const contributionLabel = contributionPaid
+    ? "Paid"
+    : contributionExempt
+      ? "Exempt"
+      : "Unpaid";
   const paidPercent =
-    data.group.memberCount === 0
+    data.activeCycle.requiredContributorCount === 0
       ? 0
-      : Math.round((data.activeCycle.paidCount / data.group.memberCount) * 100);
+      : Math.round(
+          (data.activeCycle.paidCount / data.activeCycle.requiredContributorCount) *
+            100
+        );
 
   return (
     <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
@@ -212,10 +223,12 @@ export function DashboardPageClient() {
               className={
                 contributionPaid
                   ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100"
+                  : contributionExempt
+                    ? "bg-slate-100 text-slate-700 hover:bg-slate-100"
                   : "bg-amber-100 text-amber-700 hover:bg-amber-100"
               }
             >
-              {contributionPaid ? "Paid" : "Unpaid"}
+              {contributionLabel}
             </Badge>
           </div>
           <div className="space-y-1">
@@ -224,6 +237,11 @@ export function DashboardPageClient() {
               GHS {data.group.contributionAmount.toFixed(2)}
             </p>
           </div>
+          {contributionExempt ? (
+            <p className="text-sm text-muted-foreground">
+              You are the payout recipient for this cycle, so you do not contribute this turn.
+            </p>
+          ) : null}
           {contributionPending && (
             <Button asChild>
               <Link href="/pay">Pay Now</Link>
@@ -269,7 +287,7 @@ export function DashboardPageClient() {
         <CardHeader>
           <CardDescription>Collection progress</CardDescription>
           <CardTitle>
-            {data.activeCycle.paidCount} of {data.group.memberCount} contributed
+            {data.activeCycle.paidCount} of {data.activeCycle.requiredContributorCount} contributors paid
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">

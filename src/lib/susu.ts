@@ -1,4 +1,6 @@
-// Core susu rotation logic
+// Core susu rotation logic.
+// A cycle is one payout turn inside a round.
+// A round completes once every positioned member has received one payout.
 
 import { ContributionStatus, CycleStatus } from "@/generated/prisma/client/enums";
 import { prisma } from "@/lib/prisma";
@@ -17,9 +19,23 @@ export async function getActiveCycle(groupId: string) {
   });
 }
 
+export function getPositionedMembers<T extends { payoutPosition: number | null }>(
+  members: T[]
+) {
+  return members.filter((member) => member.payoutPosition !== null);
+}
+
+export function getEligibleContributorIds<
+  T extends { userId: string; payoutPosition: number | null }
+>(members: T[], recipientId: string) {
+  return getPositionedMembers(members)
+    .filter((member) => member.userId !== recipientId)
+    .map((member) => member.userId);
+}
+
 /**
- * Get the member whose turn it is to receive payout for a given cycle number.
- * payoutPosition is 1-based; cycle numbers wrap around member count.
+ * Get the member position whose turn it is to receive payout for a given cycle number.
+ * payoutPosition is 1-based; cycle numbers move through the positions in the round.
  */
 export function getRecipientPosition(cycleNumber: number, memberCount: number): number {
   return ((cycleNumber - 1) % memberCount) + 1;
@@ -57,7 +73,7 @@ export async function bootstrapFirstCycle(groupId: string, payoutDate: Date) {
 }
 
 /**
- * Check if all members in a cycle have contributed successfully.
+ * Check if all eligible contributors in a cycle have contributed successfully.
  * If yes, marks the cycle as READY for payout.
  */
 export async function checkAndMarkCycleReady(cycleId: string) {
@@ -69,14 +85,18 @@ export async function checkAndMarkCycleReady(cycleId: string) {
     },
   });
 
-  const memberCount = cycle.group.members.length;
+  const eligibleContributorIds = new Set(
+    getEligibleContributorIds(cycle.group.members, cycle.recipientId)
+  );
   const successfulContributions = cycle.contributions.filter(
-    (c) => c.status === ContributionStatus.SUCCESS
+    (contribution) =>
+      contribution.status === ContributionStatus.SUCCESS &&
+      eligibleContributorIds.has(contribution.userId)
   );
 
-  if (successfulContributions.length >= memberCount) {
+  if (successfulContributions.length >= eligibleContributorIds.size) {
     const total = successfulContributions.reduce(
-      (sum, c) => sum + Number(c.amount),
+      (sum, contribution) => sum + Number(contribution.amount),
       0
     );
     await prisma.cycle.update({
@@ -102,10 +122,11 @@ export async function advanceToNextCycle(groupId: string, completedCycleNumber: 
     include: { members: { orderBy: { payoutPosition: "asc" } } },
   });
 
-  const memberCount = group.members.length;
+  const positionedMembers = getPositionedMembers(group.members);
+  const memberCount = positionedMembers.length;
   const nextCycleNumber = completedCycleNumber + 1;
 
-  // If everyone has received their payout, the group completes
+  // If every positioned member has received their payout, the round completes.
   if (nextCycleNumber > memberCount) {
     await prisma.susuGroup.update({
       where: { id: groupId },
@@ -115,7 +136,9 @@ export async function advanceToNextCycle(groupId: string, completedCycleNumber: 
   }
 
   const nextPosition = getRecipientPosition(nextCycleNumber, memberCount);
-  const nextRecipient = group.members.find((m) => m.payoutPosition === nextPosition);
+  const nextRecipient = positionedMembers.find(
+    (member) => member.payoutPosition === nextPosition
+  );
   if (!nextRecipient) throw new Error(`No member at position ${nextPosition}`);
 
   // Calculate next payout date based on frequency

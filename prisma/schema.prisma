@@ -120,7 +120,7 @@ model GroupMember {
 model Cycle {
   id             String      @id @default(uuid())
   groupId        String
-  cycleNumber    Int // Which round this is (1, 2, 3...)
+  cycleNumber    Int // Which cycle this is within the current round (1, 2, 3...)
   recipientId    String // The member who receives the payout this cycle
   payoutDate     DateTime    @db.Date
   status         CycleStatus @default(PENDING)

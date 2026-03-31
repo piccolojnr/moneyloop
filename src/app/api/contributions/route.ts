@@ -40,6 +40,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "You are not a member of this group" }, { status: 403 });
   }
 
+  if (cycle.recipientId === userId) {
+    return NextResponse.json(
+      { error: "You do not contribute during your payout cycle." },
+      { status: 409 }
+    );
+  }
+
   // Check if member already paid this cycle
   const existing = await prisma.contribution.findUnique({
     where: { userId_cycleId: { userId, cycleId: cycle.id } },

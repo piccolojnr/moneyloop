@@ -11,8 +11,8 @@
 // This route performs two jobs:
 // 1. Send reminder emails for every PENDING cycle to eligible contributors who
 //    have not yet paid successfully.
-// 2. For READY cycles due today, create the payout record, initiate the transfer,
-//    and advance the group to the next cycle in the round.
+// 2. For READY cycles due today, create the payout record and initiate transfer.
+//    Group progression is handled only after transfer.success webhook confirmation.
 //
 // Protected by the CRON_SECRET header. Configure this in the deployment
 // environment and in the scheduler that calls the route.
@@ -20,7 +20,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { initiateTransfer, createTransferRecipient } from "@/lib/paystack";
-import { advanceToNextCycle, getEligibleContributorIds } from "@/lib/susu";
+import { getEligibleContributorIds } from "@/lib/susu";
 import { sendContributionReminder } from "@/emails";
 
 export const runtime = "nodejs";
@@ -28,10 +28,18 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   // Verify the shared secret so this endpoint cannot be triggered publicly.
-  // const authHeader = req.headers.get("authorization");
-  // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-  //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  // }
+  const cronSecret = process.env.CRON_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json(
+      { error: "CRON_SECRET is not configured" },
+      { status: 500 }
+    );
+  }
+
+  const authHeader = req.headers.get("authorization");
+  if (authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -195,10 +203,6 @@ export async function GET(req: NextRequest) {
         where: { id: payout.id },
         data: { paystackTransferId: transfer.transfer_code },
       });
-
-      // Move the group forward immediately after initiating the transfer.
-      // Paystack's webhook will later mark the payout/cycle as successful or failed.
-      await advanceToNextCycle(cycle.groupId, cycle.cycleNumber);
 
       results.push({ cycleId: cycle.id, success: true, transferCode: transfer.transfer_code });
     } catch (err) {

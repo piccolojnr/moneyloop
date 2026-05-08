@@ -20,6 +20,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { badgeToneClass, formatDisplayDate } from "@/lib/presentation";
 
 type PlatformUser = {
   id: string;
@@ -137,21 +138,17 @@ function formatCurrency(amount: number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatDisplayDate(value, "Pending");
 }
 
 function payoutStatusClass(status: PayoutRecord["status"]) {
   switch (status) {
     case "SUCCESS":
-      return "bg-emerald-100 text-emerald-700 hover:bg-emerald-100";
+      return badgeToneClass.success;
     case "FAILED":
-      return "bg-red-100 text-red-700 hover:bg-red-100";
+      return badgeToneClass.error;
     default:
-      return "bg-amber-100 text-amber-700 hover:bg-amber-100";
+      return badgeToneClass.warning;
   }
 }
 
@@ -229,7 +226,7 @@ export default function AdminOverviewPage() {
       <section className="overflow-hidden rounded-[2rem] border bg-card shadow-sm">
         <div className="grid gap-6 p-6 lg:grid-cols-[1.45fr_0.85fr] lg:p-8">
           <div className="space-y-5">
-            <Badge className="bg-violet-100 text-violet-700 hover:bg-violet-100">
+            <Badge className={badgeToneClass.admin}>
               Platform oversight
             </Badge>
             <div className="space-y-2">

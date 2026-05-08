@@ -5,10 +5,15 @@ import { signOut } from "next-auth/react";
 
 import { PayoutAccountForm } from "@/components/account/payout-account-form";
 import { Button } from "@/components/ui/button";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 
 export default function PayoutAccountOnboardingPage() {
   const searchParams = useSearchParams();
-  const nextPath = searchParams.get("next") ?? "/dashboard";
+  const nextPath = getSafeRedirectPath(
+    searchParams.get("next"),
+    "/dashboard",
+    window.location.origin
+  );
 
   return (
     <div className="min-h-screen bg-muted/30 px-4 py-10">

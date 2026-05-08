@@ -353,8 +353,13 @@ function CompactGroupCard({ entry }: { entry: GroupDashboard }) {
           {isPaid ? "Paid" : isExempt ? "Exempt" : "Waiting"}
         </Badge>
         <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" asChild>
-          <Link href={`/groups/${group.groupId}`}>
+          <Link
+            href={`/groups/${group.groupId}`}
+            aria-label={`Open ${group.groupName} group details`}
+            title={`Open ${group.groupName}`}
+          >
             <ArrowRight className="h-3.5 w-3.5" />
+            <span className="sr-only">Open group details</span>
           </Link>
         </Button>
       </div>

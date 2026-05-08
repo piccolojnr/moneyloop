@@ -23,6 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { badgeToneClass, formatDisplayDate } from "@/lib/presentation";
 
 type GroupSummary = {
   id: string;
@@ -74,11 +75,7 @@ function formatCurrency(amount: number) {
 }
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatDisplayDate(value, "Pending");
 }
 
 function formatFrequency(value: GroupSummary["frequency"]) {
@@ -88,11 +85,11 @@ function formatFrequency(value: GroupSummary["frequency"]) {
 function statusBadgeClass(status: GroupSummary["status"]) {
   switch (status) {
     case "ACTIVE":
-      return "bg-emerald-100 text-emerald-700 hover:bg-emerald-100";
+      return badgeToneClass.success;
     case "PAUSED":
-      return "bg-amber-100 text-amber-700 hover:bg-amber-100";
+      return badgeToneClass.warning;
     default:
-      return "bg-zinc-100 text-zinc-700 hover:bg-zinc-100";
+      return badgeToneClass.neutral;
   }
 }
 
@@ -137,7 +134,7 @@ export default function AdminGroupsPage() {
       <section className="rounded-[2rem] border bg-card shadow-sm">
         <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:justify-between lg:p-8">
           <div className="space-y-3">
-            <Badge className="bg-teal-100 text-teal-700 hover:bg-teal-100">
+            <Badge className={badgeToneClass.info}>
               Group directory
             </Badge>
             <div className="space-y-2">

@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatDisplayDate } from "@/lib/presentation";
 
 type GroupSetupDetail = {
   id: string;
@@ -187,13 +188,7 @@ function addFrequency(
 }
 
 function formatDate(value: Date | string) {
-  const date = value instanceof Date ? value : new Date(value);
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(date);
+  return formatDisplayDate(value instanceof Date ? value : new Date(value));
 }
 
 function SetupSkeleton() {

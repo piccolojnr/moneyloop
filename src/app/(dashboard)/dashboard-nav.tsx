@@ -73,6 +73,7 @@ export function DashboardNav({ userName }: DashboardNavProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     active
@@ -150,8 +151,9 @@ export function DashboardNav({ userName }: DashboardNavProps) {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
-                  "flex flex-col items-center gap-1 py-3 text-[10px] font-medium transition-colors",
+                  "flex flex-col items-center gap-1 py-3 text-xs font-medium transition-colors",
                   active ? "text-primary" : "text-muted-foreground"
                 )}
               >
@@ -202,6 +204,7 @@ function MobileDrawer({
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
                 active
@@ -216,6 +219,7 @@ function MobileDrawer({
         })}
         <Link
           href="/account"
+          aria-current={pathname.startsWith("/account") ? "page" : undefined}
           className={cn(
             "flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-medium transition-colors",
             pathname.startsWith("/account")

@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 
 const loginSchema = z.object({
   email: z.string().email("Enter a valid email address"),
@@ -27,6 +28,12 @@ const loginSchema = z.object({
 type LoginValues = z.infer<typeof loginSchema>;
 
 async function getPostLoginTarget(callbackUrl: string | null) {
+  const safeCallbackUrl = getSafeRedirectPath(
+    callbackUrl,
+    "/dashboard",
+    window.location.origin
+  );
+
   for (let attempt = 0; attempt < 5; attempt += 1) {
     const session = await getSession();
     const role =
@@ -48,11 +55,11 @@ async function getPostLoginTarget(callbackUrl: string | null) {
           "/onboarding/payout-account",
           window.location.origin
         );
-        onboardingUrl.searchParams.set("next", callbackUrl ?? "/dashboard");
+        onboardingUrl.searchParams.set("next", safeCallbackUrl);
         return onboardingUrl.pathname + onboardingUrl.search;
       }
 
-      return callbackUrl ?? (role === "ADMIN" ? "/admin" : "/dashboard");
+      return role === "ADMIN" ? "/admin" : safeCallbackUrl;
     }
 
     await new Promise((resolve) => {
@@ -60,7 +67,7 @@ async function getPostLoginTarget(callbackUrl: string | null) {
     });
   }
 
-  return callbackUrl ?? "/dashboard";
+  return safeCallbackUrl;
 }
 
 export default function LoginPage() {
@@ -74,21 +81,34 @@ export default function LoginPage() {
 
   async function onSubmit(values: LoginValues) {
     setAuthError(null);
-    const callbackUrl = searchParams.get("callbackUrl");
-    const result = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      callbackUrl: callbackUrl ?? undefined,
-      redirect: false,
-    });
+    try {
+      const callbackUrl = searchParams.get("callbackUrl");
+      const safeCallbackUrl = getSafeRedirectPath(
+        callbackUrl,
+        "/dashboard",
+        window.location.origin
+      );
+      const result = await signIn("credentials", {
+        email: values.email,
+        password: values.password,
+        callbackUrl: safeCallbackUrl,
+        redirect: false,
+      });
 
-    if (result?.error) {
-      setAuthError("Invalid email or password.");
-      return;
+      if (result?.error) {
+        setAuthError("Invalid email or password.");
+        return;
+      }
+
+      const targetUrl = await getPostLoginTarget(safeCallbackUrl);
+      window.location.assign(targetUrl);
+    } catch (error) {
+      setAuthError(
+        error instanceof Error
+          ? error.message
+          : "Unable to sign in right now. Please try again."
+      );
     }
-
-    const targetUrl = await getPostLoginTarget(callbackUrl);
-    window.location.assign(targetUrl);
   }
 
   return (

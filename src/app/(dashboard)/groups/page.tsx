@@ -38,6 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { badgeToneClass } from "@/lib/presentation";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -116,24 +117,24 @@ function formatFrequency(value: GroupSummary["frequency"]) {
 function statusConfig(status: GroupSummary["status"]) {
   switch (status) {
     case "ACTIVE":
-      return { label: "Active", className: "bg-primary/10 text-primary hover:bg-primary/10" };
+      return { label: "Active", className: badgeToneClass.success };
     case "PAUSED":
-      return { label: "Paused", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" };
+      return { label: "Paused", className: badgeToneClass.warning };
     default:
-      return { label: "Completed", className: "bg-muted text-muted-foreground hover:bg-muted" };
+      return { label: "Completed", className: badgeToneClass.neutral };
   }
 }
 
 function cycleStatusConfig(status: "PENDING" | "READY" | "PAID" | "FAILED") {
   switch (status) {
     case "READY":
-      return { label: "Ready", className: "bg-sky-100 text-sky-700 hover:bg-sky-100" };
+      return { label: "Ready", className: badgeToneClass.info };
     case "PAID":
-      return { label: "Paid", className: "bg-primary/10 text-primary hover:bg-primary/10" };
+      return { label: "Paid", className: badgeToneClass.success };
     case "FAILED":
-      return { label: "Failed", className: "bg-destructive/10 text-destructive hover:bg-destructive/10" };
+      return { label: "Failed", className: badgeToneClass.error };
     default:
-      return { label: "In progress", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" };
+      return { label: "In progress", className: badgeToneClass.warning };
   }
 }
 
@@ -305,7 +306,7 @@ function GroupCard({
           <div className="flex shrink-0 flex-col items-end gap-1.5">
             <Badge className={status.className}>{status.label}</Badge>
             {isTreasurer && (
-              <Badge className="bg-primary/10 text-primary hover:bg-primary/10 text-[10px]">
+              <Badge className={`${badgeToneClass.success} text-xs`}>
                 Treasurer
               </Badge>
             )}
@@ -332,10 +333,10 @@ function GroupCard({
               );
             })}
             {overflow > 0 && (
-              <span className="ml-1 text-[10px] text-muted-foreground">+{overflow}</span>
+              <span className="ml-1 text-xs text-muted-foreground">+{overflow}</span>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {activeCycleNum > 0
               ? `Cycle ${activeCycleNum} of ${group.memberCount}`
               : "Not started yet"}
@@ -345,20 +346,20 @@ function GroupCard({
         {/* Stats grid */}
         <div className="mb-4 grid grid-cols-2 gap-2">
           <div className="rounded-xl bg-muted/50 px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Contribution</p>
+            <p className="text-xs text-muted-foreground">Contribution</p>
             <p className="mt-0.5 text-sm font-semibold">
               {formatCurrency(group.contributionAmount)}
             </p>
           </div>
           <div className="rounded-xl bg-muted/50 px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Members</p>
+            <p className="text-xs text-muted-foreground">Members</p>
             <p className="mt-0.5 text-sm font-semibold">{group.memberCount}</p>
           </div>
           <div className="rounded-xl bg-muted/50 px-3 py-2.5">
-            <p className="text-[11px] text-muted-foreground">Cycle status</p>
+            <p className="text-xs text-muted-foreground">Cycle status</p>
             {group.cycle ? (
               <Badge
-                className={`mt-0.5 text-[10px] ${cycleStatusConfig(group.cycle.status).className}`}
+                className={`mt-0.5 text-xs ${cycleStatusConfig(group.cycle.status).className}`}
               >
                 {cycleStatusConfig(group.cycle.status).label}
               </Badge>

@@ -9,6 +9,11 @@ import { getActiveCycle } from "@/lib/susu";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { rateLimit, rateLimitExceededResponse } from "@/lib/rate-limit";
+import { z } from "zod";
+
+const ContributionInitSchema = z.object({
+  groupId: z.string().uuid("groupId must be a valid UUID"),
+});
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -24,10 +29,17 @@ export async function POST(req: NextRequest) {
   const rl = rateLimit(`contribute:${userId}`, 10, 60 * 1000);
   if (!rl.allowed) return rateLimitExceededResponse(rl.resetAt);
 
-  const { groupId } = await req.json();
-  if (!groupId) {
-    return NextResponse.json({ error: "groupId is required" }, { status: 400 });
+  const parsedBody = await req
+    .json()
+    .then((body) => ContributionInitSchema.safeParse(body))
+    .catch(() => null);
+  if (!parsedBody || !parsedBody.success) {
+    return NextResponse.json(
+      { error: "groupId is required and must be a valid UUID" },
+      { status: 400 }
+    );
   }
+  const { groupId } = parsedBody.data;
 
   // Find the active cycle for this group
   const cycle = await getActiveCycle(groupId);

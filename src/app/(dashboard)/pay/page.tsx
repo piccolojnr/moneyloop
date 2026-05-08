@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, CheckCircle2, CreditCard, Loader2 } from "lucide-react";
 
@@ -170,7 +170,6 @@ function PaymentCard({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PayPage() {
-  const autoStartedRef = useRef(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [slowNotice, setSlowNotice] = useState(false);
@@ -181,10 +180,6 @@ export default function PayPage() {
   });
 
   const pendingGroups = data?.groups.filter(isPending) ?? [];
-
-  // Auto-redirect when there is exactly one pending group — same UX as before.
-  const shouldAutoStart =
-    !!data && pendingGroups.length === 1 && !autoStartedRef.current;
 
   async function pay(groupId: string) {
     setProcessingId(groupId);
@@ -223,14 +218,6 @@ export default function PayPage() {
       }));
     }
   }
-
-  // Auto-start for single-pending-group case
-  useEffect(() => {
-    if (!shouldAutoStart) return;
-    autoStartedRef.current = true;
-    void pay(pendingGroups[0].group.groupId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shouldAutoStart]);
 
   // ── Loading ──────────────────────────────────────────────────────────────
 
@@ -303,7 +290,7 @@ export default function PayPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {isProcessing
               ? "Connecting you to Paystack…"
-              : "Review your contribution and proceed to payment."}
+              : "Review your contribution, then click pay when you're ready."}
           </p>
         </div>
 

@@ -1,1 +1,5 @@
-export { GroupsPage as default } from "../../groups/page";
+import { permanentRedirect } from "next/navigation";
+
+export default function LegacyDashboardGroupsPage() {
+  permanentRedirect("/groups");
+}

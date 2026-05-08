@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { badgeToneClass, formatDisplayDate } from "@/lib/presentation";
 
 type PayoutStatus = "PENDING" | "SUCCESS" | "FAILED";
 
@@ -74,25 +75,17 @@ function formatCurrency(amount: number) {
 }
 
 function formatDate(value: string | null) {
-  if (!value) {
-    return "Not sent yet";
-  }
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatDisplayDate(value, "Not sent yet");
 }
 
 function payoutStatusClass(status: PayoutStatus) {
   switch (status) {
     case "SUCCESS":
-      return "bg-emerald-100 text-emerald-700 hover:bg-emerald-100";
+      return badgeToneClass.success;
     case "FAILED":
-      return "bg-red-100 text-red-700 hover:bg-red-100";
+      return badgeToneClass.error;
     default:
-      return "bg-amber-100 text-amber-700 hover:bg-amber-100";
+      return badgeToneClass.warning;
   }
 }
 
@@ -143,7 +136,7 @@ export default function AdminPayoutsPage() {
       <section className="rounded-[2rem] border bg-card shadow-sm">
         <div className="flex flex-col gap-6 p-6 lg:flex-row lg:items-start lg:justify-between lg:p-8">
           <div className="space-y-3">
-            <Badge className="bg-amber-100 text-amber-700 hover:bg-amber-100">
+            <Badge className={badgeToneClass.warning}>
               Transfer oversight
             </Badge>
             <div className="space-y-2">

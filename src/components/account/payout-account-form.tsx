@@ -37,6 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 
 const payoutAccountSchema = z.object({
   momoNumber: z.string().min(10, "Enter a valid mobile money number"),
@@ -161,6 +162,12 @@ export function PayoutAccountForm({
     },
   });
 
+  const safeNextPath = getSafeRedirectPath(
+    nextPath,
+    "/dashboard",
+    window.location.origin
+  );
+
   const verifyMutation = useMutation({
     mutationFn: verifyPayoutAccount,
     onSuccess: async () => {
@@ -172,7 +179,7 @@ export function PayoutAccountForm({
           : "Payout account updated and verified."
       );
       if (mode === "onboarding") {
-        window.location.assign(nextPath);
+        window.location.assign(safeNextPath);
         return;
       }
       router.refresh();
@@ -203,8 +210,8 @@ export function PayoutAccountForm({
       return;
     }
 
-    window.location.replace(nextPath);
-  }, [account?.ready, mode, nextPath]);
+    window.location.replace(safeNextPath);
+  }, [account?.ready, mode, safeNextPath]);
 
   if (accountQuery.isLoading) {
     return (

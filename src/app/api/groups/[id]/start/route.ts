@@ -94,9 +94,9 @@ export async function POST(
       );
     }
 
-    if (group.members.length === 0) {
+    if (group.members.length < 2) {
       return NextResponse.json(
-        { error: "Add members to the group before starting the first cycle" },
+        { error: "At least 2 members are required before starting the first cycle" },
         { status: 409 }
       );
     }

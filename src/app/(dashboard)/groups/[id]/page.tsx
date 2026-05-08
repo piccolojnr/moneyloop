@@ -5,7 +5,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { z } from "zod";
 import { Copy, MailPlus, ArrowLeft, CheckCircle2, Clock, AlertCircle } from "lucide-react";
@@ -34,6 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { badgeToneClass, formatDisplayDate } from "@/lib/presentation";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -111,11 +112,7 @@ async function createInvite(groupId: string, values: InviteValues) {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatDisplayDate(value, "Pending");
 }
 
 function formatCurrency(amount: number) {
@@ -176,11 +173,13 @@ export function GroupDetailPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [generatedInviteUrl, setGeneratedInviteUrl] = useState<string | null>(null);
   const [inviteSentTo, setInviteSentTo] = useState<string | null>(null);
+  const [inviteMode, setInviteMode] = useState<"email" | "open">("email");
 
   const form = useForm<InviteValues>({
     resolver: standardSchemaResolver(inviteSchema),
     defaultValues: { email: "" },
   });
+  const inviteEmail = useWatch({ control: form.control, name: "email" }) ?? "";
 
   const { data, error, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ["group", groupId],
@@ -189,7 +188,11 @@ export function GroupDetailPage() {
   });
 
   const inviteMutation = useMutation({
-    mutationFn: (values: InviteValues) => createInvite(groupId, values),
+    mutationFn: (values: InviteValues) =>
+      createInvite(
+        groupId,
+        inviteMode === "email" ? values : { email: "" }
+      ),
     onSuccess: async (result, variables) => {
       await queryClient.invalidateQueries({ queryKey: ["group", groupId] });
       setGeneratedInviteUrl(variables.email ? null : result.inviteUrl);
@@ -239,6 +242,19 @@ export function GroupDetailPage() {
   const isTreasurer = currentUserId === data.treasurerId;
   const isPlatformAdmin = currentUserRole === "ADMIN";
   const hasCycles = data.cycles.length > 0;
+  const unverifiedMembers = data.members.filter(
+    (member) => member.payoutAccountStatus !== "VERIFIED"
+  );
+  const setupBlockers: string[] = [];
+  if (data.members.length < 2) {
+    setupBlockers.push("At least 2 members are required.");
+  }
+  if (unverifiedMembers.length > 0) {
+    setupBlockers.push(
+      `${unverifiedMembers.length} member${unverifiedMembers.length === 1 ? "" : "s"} still need payout onboarding.`
+    );
+  }
+  const canStartSetup = setupBlockers.length === 0;
   const recipientNames = new Map(data.members.map((m) => [m.userId, m.name] as const));
 
   const sortedMembers = [...data.members].sort((a, b) => {
@@ -266,10 +282,10 @@ export function GroupDetailPage() {
               <Badge
                 className={
                   isTreasurer
-                    ? "bg-primary/10 text-primary hover:bg-primary/10"
+                    ? badgeToneClass.success
                     : isPlatformAdmin
-                      ? "bg-violet-100 text-violet-700 hover:bg-violet-100"
-                      : "bg-muted text-muted-foreground hover:bg-muted"
+                      ? badgeToneClass.admin
+                      : badgeToneClass.neutral
                 }
               >
                 {isTreasurer ? "Treasurer" : isPlatformAdmin ? "Admin view" : "Member"}
@@ -291,6 +307,7 @@ export function GroupDetailPage() {
                   if (!open) {
                     setGeneratedInviteUrl(null);
                     setInviteSentTo(null);
+                    setInviteMode("email");
                     form.reset({ email: "" });
                   }
                 }}
@@ -305,7 +322,7 @@ export function GroupDetailPage() {
                   <DialogHeader>
                     <DialogTitle>Invite a member</DialogTitle>
                     <DialogDescription>
-                      Send a personal invite or generate an open link.
+                      Choose either a personal email invite or a reusable open link.
                     </DialogDescription>
                   </DialogHeader>
                   <Form {...form}>
@@ -328,7 +345,7 @@ export function GroupDetailPage() {
                               />
                             </FormControl>
                             <p className="text-xs text-muted-foreground">
-                              Leave blank to generate a shareable open link.
+                              Used only when sending an email-targeted invite.
                             </p>
                             <FormMessage />
                           </FormItem>
@@ -378,9 +395,28 @@ export function GroupDetailPage() {
                         <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
                           Close
                         </Button>
-                        <Button type="submit" disabled={inviteMutation.isPending}>
+                        <Button
+                          type="submit"
+                          variant="secondary"
+                          disabled={inviteMutation.isPending}
+                          onClick={() => setInviteMode("open")}
+                        >
+                          {inviteMutation.isPending && inviteMode === "open" ? <LoadingSpinner /> : null}
+                          {inviteMutation.isPending && inviteMode === "open"
+                            ? "Generating..."
+                            : "Generate open link"}
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={
+                            inviteMutation.isPending || !inviteEmail.trim()
+                          }
+                          onClick={() => setInviteMode("email")}
+                        >
                           {inviteMutation.isPending ? <LoadingSpinner /> : null}
-                          {inviteMutation.isPending ? "Sending…" : "Generate invite"}
+                          {inviteMutation.isPending && inviteMode === "email"
+                            ? "Sending..."
+                            : "Send email invite"}
                         </Button>
                       </div>
                     </form>
@@ -388,13 +424,33 @@ export function GroupDetailPage() {
                 </DialogContent>
               </Dialog>
 
-              <Button size="sm" asChild>
-                <Link href={`/groups/${data.id}/setup`}>Set payout order</Link>
+              <Button size="sm" asChild disabled={!canStartSetup}>
+                <Link
+                  href={`/groups/${data.id}/setup`}
+                  aria-disabled={!canStartSetup}
+                >
+                  {canStartSetup ? "Set payout order" : "Complete requirements first"}
+                </Link>
               </Button>
             </div>
           )}
         </div>
       </div>
+
+      {isTreasurer && !hasCycles && !canStartSetup && (
+        <Card className="border-amber-200 bg-amber-50/60">
+          <div className="space-y-2 p-4">
+            <p className="text-sm font-medium text-amber-800">
+              Before you can start the first cycle
+            </p>
+            <ul className="space-y-1 text-sm text-amber-800/90">
+              {setupBlockers.map((blocker) => (
+                <li key={blocker}>- {blocker}</li>
+              ))}
+            </ul>
+          </div>
+        </Card>
+      )}
 
       {/* Stat strip */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -407,7 +463,7 @@ export function GroupDetailPage() {
           { label: "Group status", value: data.status },
         ].map(({ label, value }) => (
           <div key={label} className="rounded-xl bg-card p-4 ring-1 ring-border">
-            <p className="text-[11px] text-muted-foreground">{label}</p>
+            <p className="text-xs text-muted-foreground">{label}</p>
             <p className="mt-1 text-sm font-semibold">{value}</p>
           </div>
         ))}
@@ -463,8 +519,8 @@ export function GroupDetailPage() {
                     <Badge
                       className={
                         member.payoutAccountStatus === "VERIFIED"
-                          ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 shrink-0"
-                          : "bg-amber-100 text-amber-700 hover:bg-amber-100 shrink-0"
+                          ? `${badgeToneClass.success} shrink-0`
+                          : `${badgeToneClass.warning} shrink-0`
                       }
                     >
                       {member.payoutAccountStatus === "VERIFIED"
@@ -474,8 +530,8 @@ export function GroupDetailPage() {
                     <Badge
                       className={
                         member.memberRole === "TREASURER"
-                          ? "bg-primary/10 text-primary hover:bg-primary/10 shrink-0"
-                          : "bg-muted text-muted-foreground hover:bg-muted shrink-0"
+                          ? `${badgeToneClass.success} shrink-0`
+                          : `${badgeToneClass.neutral} shrink-0`
                       }
                     >
                       {member.memberRole === "TREASURER" ? "Treasurer" : "Member"}
@@ -519,7 +575,7 @@ export function GroupDetailPage() {
                           <p className="text-sm font-semibold">
                             Cycle #{cycle.cycleNumber}
                           </p>
-                          <Badge className={`${cfg.className} hover:${cfg.className.split(" ")[0]} text-[11px]`}>
+                          <Badge className={`${cfg.className} hover:${cfg.className.split(" ")[0]} text-xs`}>
                             {cfg.label}
                           </Badge>
                         </div>
@@ -530,7 +586,7 @@ export function GroupDetailPage() {
                       </div>
                     </div>
                     <div className="pl-10 sm:pl-0 sm:text-right">
-                      <p className="text-[11px] text-muted-foreground">Collected</p>
+                      <p className="text-xs text-muted-foreground">Collected</p>
                       <p className="text-base font-bold text-primary">
                         {formatCurrency(cycle.totalCollected)}
                       </p>

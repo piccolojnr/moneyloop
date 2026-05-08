@@ -1,1 +1,10 @@
-export { GroupSetupPage as default } from "../../../../groups/[id]/setup/page";
+import { permanentRedirect } from "next/navigation";
+
+export default async function LegacyDashboardGroupSetupPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  permanentRedirect(`/groups/${id}/setup`);
+}

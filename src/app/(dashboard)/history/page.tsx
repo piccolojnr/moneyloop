@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { badgeToneClass, formatDisplayDate } from "@/lib/presentation";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -63,22 +64,17 @@ function formatCurrency(amount: number) {
 }
 
 function formatDate(value: string | null) {
-  if (!value) return "Pending";
-  return new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  }).format(new Date(value));
+  return formatDisplayDate(value, "Pending");
 }
 
 function statusConfig(status: "PENDING" | "SUCCESS" | "FAILED") {
   switch (status) {
     case "SUCCESS":
-      return { label: "Paid", className: "bg-primary/10 text-primary hover:bg-primary/10" };
+      return { label: "Paid", className: badgeToneClass.success };
     case "FAILED":
-      return { label: "Failed", className: "bg-destructive/10 text-destructive hover:bg-destructive/10" };
+      return { label: "Failed", className: badgeToneClass.error };
     default:
-      return { label: "Pending", className: "bg-amber-100 text-amber-700 hover:bg-amber-100" };
+      return { label: "Pending", className: badgeToneClass.warning };
   }
 }
 

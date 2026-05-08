@@ -18,6 +18,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { getSafeRedirectPath } from "@/lib/safe-redirect";
 
 const registerSchema = z
   .object({
@@ -52,47 +53,59 @@ export default function RegisterPage() {
 
   async function onSubmit(values: RegisterValues) {
     setServerError(null);
+    try {
+      const res = await fetch("/api/members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          password: values.password,
+        }),
+      });
 
-    const res = await fetch("/api/members", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: values.name,
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        const msg =
+          typeof body.error === "string"
+            ? body.error
+            : "Registration failed. Please try again.";
+        setServerError(msg);
+        return;
+      }
+
+      const result = await signIn("credentials", {
         email: values.email,
-        phone: values.phone,
         password: values.password,
-      }),
-    });
+        redirect: false,
+      });
 
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      const msg =
-        typeof body.error === "string"
-          ? body.error
-          : "Registration failed. Please try again.";
-      setServerError(msg);
-      return;
+      if (result?.error) {
+        setServerError("Account created but sign-in failed. Please log in.");
+        router.push("/login");
+        return;
+      }
+
+      const callbackUrl = searchParams.get("callbackUrl");
+      const safeCallbackUrl = getSafeRedirectPath(
+        callbackUrl,
+        "/dashboard",
+        window.location.origin
+      );
+      const onboardingUrl = new URL(
+        "/onboarding/payout-account",
+        window.location.origin
+      );
+      onboardingUrl.searchParams.set("next", safeCallbackUrl);
+      router.push(onboardingUrl.pathname + onboardingUrl.search);
+    } catch (error) {
+      setServerError(
+        error instanceof Error
+          ? error.message
+          : "Unable to create account right now. Please try again."
+      );
     }
-
-    const result = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    });
-
-    if (result?.error) {
-      setServerError("Account created but sign-in failed. Please log in.");
-      router.push("/login");
-      return;
-    }
-
-    const callbackUrl = searchParams.get("callbackUrl");
-    const onboardingUrl = new URL(
-      "/onboarding/payout-account",
-      window.location.origin
-    );
-    onboardingUrl.searchParams.set("next", callbackUrl ?? "/dashboard");
-    router.push(onboardingUrl.pathname + onboardingUrl.search);
   }
 
   return (
